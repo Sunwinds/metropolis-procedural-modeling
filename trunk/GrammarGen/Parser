@@ -1,0 +1,72 @@
+#!/usr/bin/ruby
+
+#############################################################
+# Generic path fix                                          #
+#############################################################
+$: << File.dirname(__FILE__)
+
+#############################################################
+# Includes                                                  #
+#############################################################
+require 'Resources/Parser'
+
+if ARGV.size < 1 or ARGV.size > 3 then puts "Usage: Parser.rb filename [filename]"; Process.exit; end
+
+if ARGV.size==1
+
+  fileName = ARGV[0]
+
+  myParser=Parser.new
+
+  myParser.loadGrammarFile(fileName)
+  myParser.parse
+  myParser.finalize
+  myParser.writeFiles
+  myParser.build
+
+elsif ARGV.size==2
+
+  oldFileName = ARGV[0]
+  newFileName = ARGV[1]
+
+  oldParser = Parser.new
+  newParser = Parser.new
+
+  oldParser.loadGrammarFile(oldFileName)
+  oldParser.parse
+  oldGrammar = oldParser.grammar
+  oldTerminals = oldGrammar.terminals
+  oldSymbolHash = oldGrammar.symbolHash
+
+  newParser.loadGrammarFile(newFileName)
+  newParser.parse
+  newGrammar = newParser.grammar
+  newTerminals = newGrammar.terminals
+  newNonTerminals = newGrammar.nonTerminals
+  newSymbolHash = newGrammar.symbolHash
+
+  transformedTerminals = oldParser.grammar.terminals & newParser.grammar.nonTerminals
+  addedTerminals = newTerminals - oldTerminals
+
+  transformedTerminals.each do |symbol,numParams|
+    safeToIncrement = false
+    oldTerminals.each do |s,numP|
+      if safeToIncrement and newTerminals.member?([s,numP]) then
+        oldValue = newSymbolHash[s]
+        newSymbolHash[s] = oldValue + 1
+      end
+      if symbol == s then safeToIncrement = true end
+    end
+
+    addedTerminals.each do |s,numP|
+      oldValue = newSymbolHash[s]
+      newSymbolHash[s] = oldValue + oldTerminals.size
+    end
+
+    newSymbolHash[symbol]=oldSymbolHash[symbol]
+  end
+
+  newParser.finalize
+  newParser.writeFiles(oldParser.fileName+newParser.fileName)
+  newParser.build
+end

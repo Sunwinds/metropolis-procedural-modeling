@@ -1,0 +1,105 @@
+require 'Resources/Common'
+
+grammar Primitives
+
+  rule variableName
+    [a-z] [a-z0-9]* ('_' [a-z0-9]+)*
+    {
+      def Parsed() text_value end
+    }
+  end
+
+  rule arrayName
+    '@' variableName
+    {
+      def Parsed() variableName.text_value end
+    }
+  end
+
+  rule symbolName
+    [A-Z] [a-z0-9]* # Cannot add "_" here if we keep [0-9], for name collision reasons
+    {
+      def Parsed() text_value end
+    }
+  end
+
+  rule number
+    ('-'? [1-9] [0-9]* ( '.' [0-9]+ )? / '-'? '0' ('.' [0-9]+)?)
+    {
+      def Parsed() text_value end
+    }
+  end
+
+  # Make sure to keep these patterns in sync
+  # with mathSymbols and probDists in the Parser
+  rule mathSymbol
+    ('+' / '-' / '*' / '/')
+    {
+      def Parsed() text_value end
+    }
+  end
+
+  rule comparisonOperator
+    ('<=' / '>=' / '==' / '!=' / '>' / '<')
+    {
+      def Parsed() text_value end
+    }
+  end
+
+  rule binaryBooleanOperator
+    ('&&' / '||' / '^')
+    {
+      def Parsed() text_value end
+    }
+  end
+
+  rule unaryBooleanOperator
+    '!'
+    {
+      def Parsed() text_value end
+    }
+  end
+
+  rule booleanLiteral
+    ('true' / 'false')
+    {
+      def Parsed() text_value end
+    }
+  end
+
+  rule mathFunction
+    ('abs' / 'acos' / 'asin' / 'atan' / 'ceil' / 'cos' / 'cosh' / 'exp' / 'fabs' / 'floor' / 'log' / 'log10' / 'sin' / 'sinh' / 'sqrt' / 'tan' / 'tanh')
+    {
+      def Parsed() text_value end
+    }
+  end
+
+  rule probDist
+    distName:('NormalSample' / 'UniformSample') '(' ws* firstParam:(probExpression) ws* ',' ws* secondParam:(probExpression) ws* ')'
+    {
+      def Parsed() [ Distribution.new(distName.text_value, [firstParam.Parsed, secondParam.Parsed]) ] end
+    }
+  end
+
+  # Make sure to keep this pattern in sync
+  # with turtleSymbols in the Parser
+  rule turtleSymbol
+    ws* symbol:('+' / '-' / '&' / '^' / '\\' / '/' / '!') '(' ws* probExpression ws* ')' ws*
+    {
+      def Parsed() [symbol.text_value, [ probExpression.Parsed ]] end
+    }
+    / ws* ('+' / '-' / '&' / '^' / '\\' / '/' / '!') ws*
+    {
+      def Parsed() [text_value, [ ['22.5'] ]] end
+    }
+    / ws* '|' ws*
+    {
+      def Parsed() [text_value, []] end
+    }
+  end
+
+  rule ws
+    [ \r\t\n]
+  end
+
+end

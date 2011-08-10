@@ -1,0 +1,67 @@
+//#####################################################################
+// Copyright 2009, Jerry Talton.
+// This software is governed by the license contained in LICENSE.
+//#####################################################################
+#ifndef _%HEADERGUARD%_SYMBOL_HPP_
+#define _%HEADERGUARD%_SYMBOL_HPP_
+
+#include "Arrays.hpp"
+#include "Distributions.hpp"
+#include "Symbol.hpp"
+%INCLUDES%
+namespace ProceduralModeling{
+
+//#####################################################################
+// Class %SYMBOLNAME%Symbol
+//#####################################################################
+class %SYMBOLNAME%Symbol : public Symbol
+{
+public:
+    %SYMBOLNAME%Symbol(Symbol** symbolTable)
+     :Symbol(%TERMINAL%,%MAXSYMBOLS%,%MAXSYMBOLENTRIES%,0,%NUMFORMALPARAMS%,symbolTable)
+    {}
+
+    %SYMBOLNAME%Symbol(const bool isTerminal,const uint maxNumSymbols,const uint maxNumSymbolEntries,const uint numDiffusionParams,const uint numFormalParams,Symbol** symbolTable)
+     :Symbol(isTerminal,maxNumSymbols,maxNumSymbolEntries,numDiffusionParams,numFormalParams,symbolTable)
+    {}
+
+    virtual uint produce(const SymbolEntry* input,SymbolEntry* output,float& logProbability) const
+    {
+        %PRODUCTIONS%
+    }
+
+    virtual ushort setFlags(const float* params) const
+    {
+        %ISVALID%
+    }
+
+    virtual void render(const float* params) const
+    {
+%RENDER%
+    }
+
+    virtual void initGraphics()
+    {
+%INITGRAPHICS%
+    }
+
+    virtual void saveToMesh(const float* params) const
+    {
+%SAVETOMESH%
+    }
+
+    virtual void voxel(const float* params) const
+    {
+%VOXEL%
+    }
+
+    virtual const char* symbolName() const
+    { return "%SYMBOLNAME%"; }
+
+//#####################################################################
+};
+
+//#####################################################################
+} // namespace ProceduralModeling
+
+#endif //_%HEADERGUARD%_SYMBOL_HPP_
