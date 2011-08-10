@@ -1,0 +1,107 @@
+//#####################################################################
+// Copyright 2009, Jerry Talton.
+// This software is governed by the license contained in LICENSE.
+//#####################################################################
+#include "Common.hpp"
+#include "LeftBracketSymbol.hpp"
+#include "RightBracketSymbol.hpp"
+#include "PlusSymbol.hpp"
+#include "MinusSymbol.hpp"
+#include "AmpersandSymbol.hpp"
+#include "CaretSymbol.hpp"
+#include "BackSlashSymbol.hpp"
+#include "ForwardSlashSymbol.hpp"
+#include "PipeSymbol.hpp"
+#include "ExclamationSymbol.hpp"
+%INCLUDES%
+
+using namespace ProceduralModeling;
+
+//#####################################################################
+// Function axiomNumSymbolEntries
+//#####################################################################
+PROCEDURAL_PLUGIN_EXPORT_C uint axiomNumSymbolEntries()
+{
+    return %NUMSYMBOLENTRIESINAXIOM%;
+}
+//#####################################################################
+// Function axiomNumSymbols
+//#####################################################################
+PROCEDURAL_PLUGIN_EXPORT_C uint axiomNumSymbols()
+{
+    return %NUMSYMBOLSINAXIOM%;
+}
+//#####################################################################
+// Function axiom
+//#####################################################################
+PROCEDURAL_PLUGIN_EXPORT_C void axiom(SymbolEntry* axiom,Symbol** symbolTable)
+{
+    %AXIOM%
+}
+//#####################################################################
+// Function createSymbolTable
+//#####################################################################
+PROCEDURAL_PLUGIN_EXPORT_C Symbol** createSymbolTable()
+{
+    Symbol** table=new Symbol*[%TABLESIZE%];
+    table=new Symbol*[%TABLESIZE%];
+    memset(table,0,%TABLESIZE%*sizeof(Symbol*));
+    table[0]=new LeftBracketSymbol(table);
+    table[1]=new RightBracketSymbol(table);
+    table[2]=new PlusSymbol(table);
+    table[3]=new MinusSymbol(table);
+    table[4]=new AmpersandSymbol(table);
+    table[5]=new CaretSymbol(table);
+    table[6]=new BackSlashSymbol(table);
+    table[7]=new ForwardSlashSymbol(table);
+    table[8]=new PipeSymbol(table);
+    table[9]=new ExclamationSymbol(table);
+    %SYMBOLS%
+    return table;
+}
+//#####################################################################
+// Function createSymbolTable
+//#####################################################################
+PROCEDURAL_PLUGIN_EXPORT_C uint numSymbolsInTable()
+{
+    return %TABLESIZE%;
+}
+//#####################################################################
+// Function derivationDepthLimit
+//#####################################################################
+PROCEDURAL_PLUGIN_EXPORT_C uint derivationDepthLimit()
+{
+    return %DERIVATIONDEPTHLIMIT%;
+}
+//#####################################################################
+// Function destroySymbolTable
+//#####################################################################
+PROCEDURAL_PLUGIN_EXPORT_C void destroySymbolTable(Symbol*** table)
+{
+    for(uint i=0;i<%TABLESIZE%;i++) delete (*table)[i];
+    delete[] (*table);
+}
+//#####################################################################
+// Function setupGraphics
+//#####################################################################
+PROCEDURAL_PLUGIN_EXPORT_C void setupGraphics(Symbol** table, ResourceHandler* resourceHandler)
+{
+    for (uint i=0;i<%TABLESIZE%;i++) if(table[i])
+    { table[i]->setResourceHandler(resourceHandler); table[i]->initGraphics(); }
+    %MESH%
+}
+//#####################################################################
+// Function initOutputMesh
+//#####################################################################
+PROCEDURAL_PLUGIN_EXPORT_C void initOutputMesh(ResourceHandler* resourceHandler)
+{
+    resourceHandler->getOutputMesh()->init();
+}
+//#####################################################################
+// Function saveOutputMesh
+//#####################################################################
+PROCEDURAL_PLUGIN_EXPORT_C void saveOutputMesh(ResourceHandler* resourceHandler, const QString& name)
+{
+    resourceHandler->getOutputMesh()->saveToObjFile(name);
+}
+//#####################################################################

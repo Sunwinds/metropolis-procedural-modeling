@@ -1,0 +1,219 @@
+require 'Resources/Expression'
+
+grammar LSystem
+
+  include Expression
+
+  rule line
+    ws* axiom ws* ';' ws*
+    {
+      def Predecessor() nil end
+      def Axiom() axiom.Axiom end
+      def Productions() nil end
+      def DerivationLength() nil end
+      def ArrayDefinition() nil end
+    }
+    / ws* production ws* ';' ws*
+    {
+      def Predecessor() production.Predecessor end
+      def Axiom() nil end
+      def Productions() Production.new(production.Predecessor,production.Conditional,production.Probability,production.Successor) end
+      def DerivationLength() nil end
+      def ArrayDefinition() nil end
+    }
+    / ws* derivationLength ws* ';' ws*
+    {
+      def Predecessor() nil end
+      def Axiom() nil end
+      def Productions() nil end
+      def DerivationLength() derivationLength.Length end
+      def ArrayDefinition() nil end
+    }
+    / ws* arrayDefinition ws* ';' ws*
+    {
+      def Predecessor() nil end
+      def Axiom() nil end
+      def Productions() nil end
+      def DerivationLength() nil end
+      def ArrayDefinition() arrayDefinition.Array end
+    }
+  end
+
+  rule axiom
+    'Axiom' ws* ':' ws* bracketString
+    {
+      def Axiom() bracketString.Parsed end
+    }
+  end
+
+  rule production
+    !'Axiom' parametricModule ws* '->' ws* string
+    {
+      def Predecessor() [parametricModule.Name, parametricModule.ParameterList] end
+      def Probability() [ '1.0' ] end
+      def Successor() string.Parsed end
+      def Conditional() [ 'true' ] end
+    }
+    / !'Axiom' parametricModule ws* '<' ws* expression ws* '>' ws* '->' ws* string
+    {
+      def Predecessor() [parametricModule.Name, parametricModule.ParameterList] end
+      def Probability() expression.Parsed end
+      def Successor() string.Parsed end
+      def Conditional() [ 'true' ] end
+    }
+    / !'Axiom' parametricModule ws* ':' ws* booleanExpression ws* '->' ws* string
+    {
+      def Predecessor() [parametricModule.Name, parametricModule.ParameterList] end
+      def Probability() [ '1.0' ] end
+      def Successor() string.Parsed end
+      def Conditional() booleanExpression.Parsed end
+    }
+    / !'Axiom' parametricModule ws* '<' ws* expression ws* '>' ws* ':' ws* booleanExpression ws* '->' ws* string
+    {
+      def Predecessor() [parametricModule.Name, parametricModule.ParameterList] end
+      def Probability() expression.Parsed end
+      def Successor() string.Parsed end
+      def Conditional() booleanExpression.Parsed end
+    }
+  end
+
+  rule derivationLength
+    'DerivationLength' ws* ':' ws* number
+    {
+      def Length
+        number.Parsed
+      end
+    }
+  end
+
+  rule arrayDefinition
+    arrayName ws* '=' ws* '{' ws* firstEntries:(number ws* ',' ws* )* lastEntry:(number) ws* '}'
+    {
+      def Array
+        list = []
+        firstEntries.elements.each do |e|
+          list << [ e.elements[0].Parsed ]
+        end
+        list << [ lastEntry.Parsed ]
+        [arrayName.Parsed, list]
+      end
+    }
+  end
+
+  rule numericModule
+    symbolName '(' ws* firstParams:((number / variableName) ws* ',' ws* )* lastParam:(number / variableName) ws* ')'
+    {
+      def Name() symbolName.Parsed end
+      def ParameterList
+        list = []
+        firstParams.elements.each do |e|
+          list << [ e.elements[0].Parsed ]
+        end
+        list << [ lastParam.Parsed ]
+      end
+    }
+    / symbolName
+    {
+      def Name() text_value end
+      def ParameterList
+        []
+      end
+    }
+  end
+
+  rule parametricModule
+    symbolName '(' ws* firstParams:(variableName ws* ',' ws* )* lastParam:(variableName) ws* ')'
+    {
+      def Name() symbolName.Parsed end
+      def ParameterList
+        list = []
+        firstParams.elements.each do |e|
+          list += [ e.elements[0].Parsed ]
+        end
+        list += [ lastParam.Parsed ]
+      end
+    }
+    / symbolName
+    {
+      def Name() text_value end
+      def ParameterList
+        []
+      end
+    }
+  end
+
+  rule expressionModule
+    symbolName '(' ws* firstParams:(probExpression ws* ',' ws* )* ws* lastParam:(probExpression) ws* ')'
+    {
+      def Name() symbolName.Parsed end
+      def ParsedExpressionList
+        list = []
+        firstParams.elements.each do |e|
+          list << e.elements[0].Parsed
+        end
+        list << lastParam.Parsed
+      end
+    }
+    / symbolName
+    {
+      def Name() text_value end
+      def ParsedExpressionList() [] end
+    }
+  end
+
+  rule string
+    bracketString ws* turtles:(turtleSymbol*)
+    {
+      def Parsed
+        parsed = bracketString.Parsed
+        turtles.elements.each do |e|
+          parsed << e.Parsed
+        end
+        parsed
+      end
+    }
+  end
+
+  rule bracketString
+    turtles:(turtleSymbol*) ws* expressionModule ws* brackets:(bracketString*)
+    {
+      def Parsed
+        parsed = []
+        turtles.elements.each do |e|
+          parsed << e.Parsed
+        end
+        parsed << [expressionModule.Name, expressionModule.ParsedExpressionList]
+        brackets.elements.each do |e|
+          parsed += e.Parsed
+        end
+        parsed
+      end
+    }
+    / '[' ws* brackets:(bracketString+) ws* ']' ws* right:(bracketString*)
+    {
+      def Parsed
+        parsed = []
+        parsed << [ '[', [] ]
+        brackets.elements.each do |e|
+          parsed += e.Parsed
+        end
+        parsed << [ ']', [] ]
+        right.elements.each do |e|
+          parsed += e.Parsed
+        end
+        parsed
+      end
+    }
+    / turtles:(turtleSymbol+) ws* brackets:(bracketString)
+    {
+      def Parsed
+        parsed = []
+        turtles.elements.each do |e|
+          parsed << e.Parsed
+        end
+        parsed += brackets.Parsed
+      end
+    }
+  end
+
+end

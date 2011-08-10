@@ -1,0 +1,160 @@
+require 'Resources/Primitives'
+
+grammar Expression
+
+ include Primitives
+
+ rule expression
+    mathFunction '(' ws* expression ws* ')' ws* expressionRest
+    {
+      def Parsed
+        [mathFunction.text_value] + ['('] + expression.Parsed + [')'] + expressionRest.Parsed
+      end
+    }
+    / '(' ws* expression ws* ')' ws* expressionRest
+    {
+      def Parsed
+        ['('] + expression.Parsed + [')'] + expressionRest.Parsed
+      end
+    }
+    / expressionSymbol ws* expressionRest
+    {
+      def Parsed
+        expressionSymbol.Parsed + expressionRest.Parsed
+      end
+    }
+    / nonLeftRecursivePartOfBooleanExpression ws* '?' ws* first:(expression) ws* ':' ws* second:(expression) ws* expressionRest
+    {
+      def Parsed
+        return nonLeftRecursivePartOfBooleanExpression.Parsed + ['?'] + first.Parsed + [':'] + second.Parsed + expressionRest.Parsed
+      end
+    }
+  end
+
+  rule expressionRest
+    mathSymbol ws* expression ws* expressionRest
+    {
+      def Parsed
+        [ mathSymbol.text_value ] + expression.Parsed + expressionRest.Parsed
+      end
+    }
+    / factoredLeftRecursivePartOfBooleanExpression ws* '?' ws* first:(expression) ws* ':' ws* second:(expression) ws* expressionRest
+    {
+      def Parsed
+        return factoredLeftRecursivePartOfBooleanExpression.Parsed + ['?'] + first.Parsed + [':'] + second.Parsed + expressionRest.Parsed
+      end
+    }
+    / ''
+    {
+      def Parsed() [] end
+    }
+  end
+
+  rule probExpression
+    probDist ws* probExpressionRest
+    {
+      def Parsed
+        probDist.Parsed + probExpressionRest.Parsed
+      end
+    }
+    / mathFunction '(' ws* probExpression ws* ')' ws* probExpressionRest
+    {
+      def Parsed
+        [mathFunction.text_value] + ['('] + probExpression.Parsed + [')'] + probExpressionRest.Parsed
+      end
+    }
+    / '(' ws* probExpression ws* ')' ws* probExpressionRest
+    {
+      def Parsed
+        ['('] + probExpression.Parsed + [')'] + probExpressionRest.Parsed
+      end
+    }
+    / expressionSymbol ws* probExpressionRest
+    {
+      def Parsed
+        expressionSymbol.Parsed + probExpressionRest.Parsed
+      end
+    }
+    / nonLeftRecursivePartOfBooleanExpression ws* '?' ws* first:(probExpression) ws* ':' ws* second:(probExpression) ws* probExpressionRest
+    {
+      def Parsed
+        return nonLeftRecursivePartOfBooleanExpression.Parsed + ['?'] + first.Parsed + [':'] + second.Parsed + probExpressionRest.Parsed
+      end
+    }
+  end
+
+  rule probExpressionRest
+    mathSymbol ws* probExpression ws* probExpressionRest
+    {
+      def Parsed
+        [ mathSymbol.text_value ] + probExpression.Parsed + probExpressionRest.Parsed
+      end
+    }
+    / factoredLeftRecursivePartOfBooleanExpression ws* '?' ws* first:(probExpression) ws* ':' ws* second:(probExpression) ws* probExpressionRest
+    {
+      def Parsed
+        return factoredLeftRecursivePartOfBooleanExpression.Parsed + ['?'] + first.Parsed + [':'] + second.Parsed + probExpressionRest.Parsed
+      end
+    }
+    / ''
+    {
+      def Parsed() [] end
+    }
+  end
+
+  rule booleanExpression
+    leftRecursivePartOfBooleanExpression / nonLeftRecursivePartOfBooleanExpression
+  end
+
+  rule leftRecursivePartOfBooleanExpression
+    first:(expression) ws* comparisonOperator ws* second:(expression) ws* booleanExpressionRest
+    {
+      def Parsed() first.Parsed + [comparisonOperator.text_value] + second.Parsed + booleanExpressionRest.Parsed end
+    }
+  end
+
+  rule factoredLeftRecursivePartOfBooleanExpression
+    comparisonOperator ws* second:(expression) ws* booleanExpressionRest
+    {
+      def Parsed() [comparisonOperator.text_value] + second.Parsed + booleanExpressionRest.Parsed end
+    }
+  end
+
+  rule nonLeftRecursivePartOfBooleanExpression
+    '(' ws* booleanExpression ws* ')' ws* booleanExpressionRest
+    {
+      def Parsed() ['('] + booleanExpression.Parsed + [')'] + booleanExpressionRest.Parsed end
+    }
+    / unaryBooleanOperator ws* booleanExpression ws* booleanExpressionRest
+    {
+      def Parsed() [unaryBooleanOperator.text_value] + booleanExpression.Parsed + booleanExpressionRest.Parsed end
+    }
+    / booleanLiteral ws* booleanExpressionRest
+    {
+      def Parsed() [booleanLiteral.Parsed] + booleanExpressionRest.Parsed end
+    }
+  end
+
+  rule booleanExpressionRest
+    binaryBooleanOperator ws* booleanExpression
+    {
+      def Parsed() [binaryBooleanOperator.text_value] + booleanExpression.Parsed end
+    }
+    / ''
+    {
+      def Parsed() [] end
+    }
+  end
+
+  rule expressionSymbol
+    (variableName / number)
+    {
+      def Parsed() [ text_value ] end
+    }
+    / arrayName '{' ws* expression ws* '}'
+    {
+      def Parsed() [ ParamArray.new(arrayName.Parsed, expression.Parsed) ] end
+    }
+  end
+
+end
