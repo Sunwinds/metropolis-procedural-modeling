@@ -1,0 +1,6 @@
+#summary Instructions for building the code.
+
+= Prerequisites =
+
+* Qt 4
+* GLEW
