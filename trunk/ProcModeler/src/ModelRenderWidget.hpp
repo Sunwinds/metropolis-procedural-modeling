@@ -6,7 +6,6 @@
 
 #include "ProceduralModel.hpp"
 #include "ModelSimulation.hpp"
-#include "VoxelizationWidget.hpp"
 #include <QGLWidget>
 #include <QSize>
 #include <QLineEdit>
@@ -53,7 +52,6 @@ protected:
     QPoint mLastMousePosition;
     uint mRenderLevel;
     bool mCtrlHeld,mShowMaxPosterior,mRunning,mShowLastModel;
-    VoxelizationWidget* mVoxelWidget;
     uint mImageLogRate,mObjLogRate,mModelLogRate,mRefreshRate;
     float mSavedTheta,mSavedPhi,mSavedX,mSavedY,mSavedZ;
     LogDisplay mLogDisplay;
@@ -61,7 +59,7 @@ protected:
 public:
     ModelRenderWidget(QWidget* parent=NULL)
         :QGLWidget(parent),mModel(NULL),mModelBuffer(NULL),mTheta(0),mPhi(PI_OVER_TWO),mX(0),mY(0),mZ(-20),mAspectRatio(1),mRenderLevel(0),
-         mCtrlHeld(false),mShowMaxPosterior(false),mRunning(false),mShowLastModel(false),mVoxelWidget(NULL),mImageLogRate(2000),
+         mCtrlHeld(false),mShowMaxPosterior(false),mRunning(false),mShowLastModel(false),mImageLogRate(2000),
          mObjLogRate(5000),mModelLogRate(1000),mRefreshRate(1),mSavedTheta(0),mSavedPhi(PI_OVER_TWO),mSavedX(0),mSavedY(0),mSavedZ(-20)
     {}
 
@@ -122,9 +120,6 @@ public:
     bool isRunning() const
     { return mRunning; }
 
-    void setVoxelWidget(VoxelizationWidget* voxelWidget)
-    { mVoxelWidget=voxelWidget; }
-
     void setCamera(float theta,float phi,float z)
     { mTheta=theta; mPhi=phi; updateGL(); }
 
@@ -133,12 +128,6 @@ public:
 
     friend QTextStream& operator>>(QTextStream& in,ModelRenderWidget& widget)
     { return in>>widget.mTheta>>widget.mPhi>>widget.mX>>widget.mY>>widget.mZ>>widget.mRenderLevel; widget.updateGL(); }
-
-    void outputVoxel()
-    { if (!mModel) return; mModel->voxelize(mModel->model(mRenderLevel)); mModel->getResourceHandler().getBBoxHelper()->saveToMesh(); }
-
-    void outputVoxelFile(const QString& path)
-    { if (!mModel) return; mModel->voxelize(mModel->maxPosteriorModel()); mModel->getResourceHandler().getBBoxHelper()->saveToFile(path); }
 
     void saveCamera()
     { mSavedTheta=mTheta; mSavedPhi=mPhi; mSavedX=mX; mSavedY=mY; mSavedZ=mZ; }

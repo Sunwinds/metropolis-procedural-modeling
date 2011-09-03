@@ -1,10 +1,6 @@
 //#####################################################################
 // Copyright 2009, Jerry Talton.
 //#####################################################################
-#ifdef USE_CUDA
-  #include <GL/glew.h>
-  #include "SketchBasedCUDAProceduralModel.hpp"
-#endif
 #include <QMenuBar>
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -15,43 +11,21 @@
 #include "ModelSimulation.hpp"
 #include "SketchingWidget.hpp"
 #include "SketchBasedProceduralModel.hpp"
-#include "VoxelizationWidget.hpp"
-#include "VoxelBasedProceduralModel.hpp"
-#include "MondrianProceduralModel.hpp"
 
-#define P_IMAGEWIDGET (static_cast<SketchingWidget*>(mTargetWidget))
-#define P_VOXELWIDGET (static_cast<VoxelizationWidget*>(mTargetWidget))
-#define P_VOXELPROCMODEL (static_cast<VoxelBasedProceduralModel*>(mModel))
-#ifdef USE_CUDA
-#define P_SKETCHMODEL (static_cast<SketchBasedCUDAProceduralModel*>(mModel))
-#else
 #define P_SKETCHMODEL (static_cast<SketchBasedProceduralModel*>(mModel))
-#endif
-#define P_MONDRIANMODEL (static_cast<MondrianProceduralModel*>(mModel))
-
-#define VOXWIDTH 16
-#define VOXHEIGHT 16
+#define P_IMAGEWIDGET (static_cast<SketchingWidget*>(mTargetWidget))
 
 //####################################################################
 // Function ModelWindow
 //####################################################################
 ModelWindow::ModelWindow(WidgetType target)
  :mType(target),mRenderWidget(new ModelRenderWidget(this)),mModel(NULL),mSimulation(NULL),mModelLoaded(false),mLoggingAct(NULL),mLevelAct(NULL),mMaxPosteriorAct(NULL),mGlobalLogSB(NULL),
-  mNumReplicasSB(NULL),mTemperatureExponentSB(NULL),mFalsePositiveSB(NULL),mFalseNegativeSB(NULL),mLikelihoodMultiplierSB(NULL),mVoxelMissingSB(NULL),mEmptyHittingSB(NULL),mLikelihoodFactorSB(NULL)
+  mNumReplicasSB(NULL),mTemperatureExponentSB(NULL),mFalsePositiveSB(NULL),mFalseNegativeSB(NULL),mLikelihoodMultiplierSB(NULL)
 {
     setupMenuAndButton();
     switch(mType)
     {
       case IMAGE:
-        mTargetWidget=new SketchingWidget(this);
-        break;
-      case VOXEL:
-        mTargetWidget=new VoxelizationWidget(this);
-        P_VOXELWIDGET->setSize(VOXWIDTH,VOXHEIGHT);
-        mRenderWidget->setVoxelWidget(P_VOXELWIDGET);
-        P_VOXELWIDGET->setRenderWidget(mRenderWidget);
-        break;
-      case MA:
         mTargetWidget=new SketchingWidget(this);
         break;
       default: break;
@@ -347,48 +321,6 @@ void ModelWindow::setupSimMenuAndButton()
             P_IMAGEWIDGET->setupMenuAndButton();
         }
         break;
-        case VOXEL:
-        {
-            QGroupBox* voxelSimControlGroup = new QGroupBox(tr("Voxel Simulation Control"));
-            QGridLayout* voxelSimControlLayout = new QGridLayout();
-
-            row=0;
-            QLabel* voxelMissingLabel= new QLabel(tr("Set the voxel missing factor"));
-            voxelSimControlLayout->addWidget(voxelMissingLabel,row,0);
-            mVoxelMissingSB=new QDoubleSpinBox();
-            mVoxelMissingSB->setRange(0,50);
-            mVoxelMissingSB->setSingleStep(0.1);
-            mVoxelMissingSB->setValue(1.0);
-            connect(mVoxelMissingSB,SIGNAL(valueChanged(double)),this,SLOT(setVoxelMissingFactor(double)));
-            voxelSimControlLayout->addWidget(mVoxelMissingSB,row,1);
-            row++;
-
-            QLabel* emptyHittingLabel= new QLabel(tr("Set the empty hitting factor"));
-            voxelSimControlLayout->addWidget(emptyHittingLabel,row,0);
-            mEmptyHittingSB=new QDoubleSpinBox();
-            mEmptyHittingSB->setRange(0,50);
-            mEmptyHittingSB->setSingleStep(0.1);
-            mEmptyHittingSB->setValue(1.0);
-            connect(mEmptyHittingSB,SIGNAL(valueChanged(double)),this,SLOT(setEmptyHittingFactor(double)));
-            voxelSimControlLayout->addWidget(mEmptyHittingSB,row,1);
-            row++;
-
-            QLabel* likelihoodFactorLabel= new QLabel(tr("Set the likelihood scaling factor"));
-            voxelSimControlLayout->addWidget(likelihoodFactorLabel,row,0);
-            mLikelihoodFactorSB=new QDoubleSpinBox();
-            mLikelihoodFactorSB->setRange(0,10);
-            mLikelihoodFactorSB->setSingleStep(0.1);
-            mLikelihoodFactorSB->setValue(1.0);
-            connect(mLikelihoodFactorSB,SIGNAL(valueChanged(double)),this,SLOT(setLikelihoodFactor(double)));
-            voxelSimControlLayout->addWidget(mLikelihoodFactorSB,row,1);
-            row++;
-
-            voxelSimControlGroup->setLayout(voxelSimControlLayout);
-            mControlPanel->widget()->layout()->addWidget(voxelSimControlGroup);
-
-            P_VOXELWIDGET->setupMenuAndButton();
-        }
-        break;
         default: break;
     }
 }
@@ -492,14 +424,7 @@ void ModelWindow::resetPTparam(int numReplicas, float temperatureExponent)
 //####################################################################
 ProceduralModel* ModelWindow::newModel() const
 {
-    if(mType==IMAGE)
-#ifdef USE_CUDA
-        return new SketchBasedCUDAProceduralModel(mRenderWidget,*P_IMAGEWIDGET);
-#else
-        return new SketchBasedProceduralModel(mRenderWidget,*P_IMAGEWIDGET);
-#endif
-    else if(mType==VOXEL) return new VoxelBasedProceduralModel(mRenderWidget,*P_VOXELWIDGET);
-    else if(mType==MA) return new MondrianProceduralModel(mRenderWidget,*P_IMAGEWIDGET);
+    if(mType==IMAGE) return new SketchBasedProceduralModel(mRenderWidget,*P_IMAGEWIDGET);
     else return new ProceduralModel(mRenderWidget);
 }
 //####################################################################
@@ -563,7 +488,7 @@ void ModelWindow::openModel()
     QString modelPath=QFileDialog::getOpenFileName(this,"Select grammar plugin",QString(procModBaseDir)+QString("/Code/GrammarGen/Plugins"),fileFilter);
 # endif
     if(modelPath.isEmpty()) return;
-    openModel(modelPath);    
+    openModel(modelPath);
     resetPTparam(mModel->numReplicas(),mModel->temperatureExponent());
     mRenderWidget->logDisplay().reset(mNumIterations);
     delete mSimulation; mSimulation=NULL;
@@ -579,7 +504,7 @@ void ModelWindow::openModel(QString modelPath)
     if(!mModel->loadFromFile(mModelPluginPath)) exit(-1);
     mRenderWidget->setProceduralModel(mModel);
     mNumIterations=0; mModelLoaded=true;
-    refreshToggles();    
+    refreshToggles();
 }
 //####################################################################
 // Function saveMesh
@@ -610,8 +535,6 @@ void ModelWindow::loadSimWorkspace()
         resize(2*image.width(),image.height()+iconSize().height()+menuBar()->height()+statusBar()->height());
         P_IMAGEWIDGET->refresh();
     }
-    else if(mType==VOXEL){ }
-//    { P_VOXELWIDGET->loadModel(QString(mSimulation->pathName())+"/targetModel.obj"); }
 
     openModel(mSimulation->libraryPath());
     mNumIterations=mSimulation->getNumIterations();
@@ -629,8 +552,7 @@ void ModelWindow::saveSimWorkspace()
     if(mSimulation||loadNewSimWorkspace())
     {
         mSimulation->save();
-        if(mType==VOXEL){ QFile model(P_VOXELWIDGET->getFilePath()); model.copy(QString(mSimulation->pathName())+"/targetModel.obj"); }
-        else if(mType==IMAGE) P_IMAGEWIDGET->saveImage(QString(mSimulation->pathName())+"/targetImage.png");
+        if(mType==IMAGE) P_IMAGEWIDGET->saveImage(QString(mSimulation->pathName())+"/targetImage.png");
     }
 }
 //####################################################################
@@ -831,12 +753,6 @@ void ModelWindow::refreshToggles()
         mFalseNegativeSB->setValue(P_SKETCHMODEL->falseNegativeMultiplier());
         mLikelihoodMultiplierSB->setValue(P_SKETCHMODEL->likelihoodMultiplier());
     }
-    else if(mType==VOXEL)
-    {
-        mVoxelMissingSB->setValue(P_VOXELPROCMODEL->getVoxelMissingFactor());
-        mEmptyHittingSB->setValue(P_VOXELPROCMODEL->getEmptyHittingFactor());
-        mLikelihoodFactorSB->setValue(P_VOXELPROCMODEL->getLikelihoodFactor());
-    }
 }
 //####################################################################
 // Function incrementRenderLevel
@@ -964,69 +880,6 @@ void ModelWindow::toggleIgnoreColor()
     if(!mModel) return;
     P_SKETCHMODEL->toggleIgnoreColor();
     resetModelLikelihood();
-}
-//####################################################################
-// Function setVoxelMissingFactor
-//####################################################################
-void ModelWindow::setVoxelMissingFactor(double val)
-{
-    if (!mModel) return;
-    P_VOXELPROCMODEL->setVoxelMissingFactor(val);
-    resetModelLikelihood();
-}
-//####################################################################
-// Function setVoxelMissingFactor
-//####################################################################
-void ModelWindow::setVoxelMissingFactor()
-{
-    bool ok;
-    if (!mModel) return;
-    double factor=QInputDialog::getDouble(this,tr("Voxel Missing"),tr("Penalty Factor:"),P_VOXELPROCMODEL->getVoxelMissingFactor(),0,50,5,&ok);
-    if (!ok) return;
-    setVoxelMissingFactor(factor);
-    mVoxelMissingSB->setValue(factor);
-}
-//####################################################################
-// Function setEmptyHittingFactor
-//####################################################################
-void ModelWindow::setEmptyHittingFactor(double val)
-{
-    if (!mModel) return;
-    P_VOXELPROCMODEL->setEmptyHittingFactor(val);
-    resetModelLikelihood();
-}
-//####################################################################
-// Function setEmptyHittingFactor
-//####################################################################
-void ModelWindow::setEmptyHittingFactor()
-{
-    bool ok;
-    if (!mModel) return;
-    double factor=QInputDialog::getDouble(this,tr("Empty Hitting"),tr("Penalty Factor:"),P_VOXELPROCMODEL->getEmptyHittingFactor(),0,50,5,&ok);
-    if (!ok) return;
-    setEmptyHittingFactor(factor);
-    mEmptyHittingSB->setValue(factor);
-}
-//####################################################################
-// Function setLikehoodFactor
-//####################################################################
-void ModelWindow::setLikelihoodFactor(double val)
-{
-    if (!mModel) return;
-    P_VOXELPROCMODEL->setLikelihoodFactor(val);
-    resetModelLikelihood();
-}
-//####################################################################
-// Function setLikehoodFactor
-//####################################################################
-void ModelWindow::setLikelihoodFactor()
-{
-    bool ok;
-    if (!mModel) return;
-    double factor=QInputDialog::getDouble(this,tr("Likelihood"),tr("Likelihood Factor:"),P_VOXELPROCMODEL->getLikelihoodFactor(),0,10,5,&ok);
-    if (!ok) return;
-    setLikelihoodFactor(factor);
-    mLikelihoodFactorSB->setValue(factor);
 }
 //####################################################################
 // Function setLoggingRefreshRate

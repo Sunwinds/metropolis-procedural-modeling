@@ -1,6 +1,7 @@
 //#####################################################################
 // Copyright 2009, Jerry Talton.
 //#####################################################################
+#include "GL/glew.h"
 #include "ModelRenderWidget.hpp"
 #include "ModelSimulation.hpp"
 #include <time.h>
@@ -176,7 +177,6 @@ void ModelRenderWidget::mouseMoveEvent(QMouseEvent* event)
 
     mLastMousePosition=event->pos();
     updateGL();
-    if (mVoxelWidget) mVoxelWidget->setCamera(mTheta,mPhi,mZ);
 }
 //####################################################################
 // Function getModelImage

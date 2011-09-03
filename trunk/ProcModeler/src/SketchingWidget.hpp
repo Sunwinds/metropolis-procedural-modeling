@@ -11,7 +11,6 @@
 #include <QGLWidget>
 #include <QTextStream>
 #include <QMainWindow>
-//#include "ModelWindow.hpp"
 
 class QMouseEvent;
 
@@ -30,7 +29,6 @@ protected:
     bool mGLImageFlag;
     float mBrushSize;
     QPoint mLastMousePosition;
-    float mBlurSmoothness;
     QColor mBrushColor;
 
 public:
@@ -51,7 +49,7 @@ public:
 
     void fastMarchSketch()
     { fastMarchSketch(mImage); refresh(); }
-    
+
     virtual void resizeEvent(QResizeEvent* event)
     { mImage=mImage.scaled(width(),height(),Qt::IgnoreAspectRatio,Qt::SmoothTransformation); refresh(); }
 
@@ -85,9 +83,7 @@ public slots:
     { mImage.fill(0xFF000000); refresh(); }
 
 protected slots:
-    void blurSketch();
     void loadImageFromFile();
-    void setBlurSmoothness();
     void pickColor();
 //####################################################################
 };
