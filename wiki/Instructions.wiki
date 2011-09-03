@@ -2,5 +2,6 @@
 
 = Prerequisites =
 
-* Qt 4
-* GLEW
+ * Qt 4
+ * GLEW
+ * polyglot, treetop
