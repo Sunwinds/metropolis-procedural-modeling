@@ -3,7 +3,6 @@
 //#####################################################################
 #include <iostream>
 #include <QMouseEvent>
-#include <QtImageFilter>
 #include <QFileDialog>
 #include "SketchingWidget.hpp"
 #include "Math.hpp"
@@ -18,7 +17,7 @@ using ProceduralModeling::Math::sqr;
 // Function SketchingWidget
 //####################################################################
 SketchingWidget::SketchingWidget(QWidget* parent)
- :QWidget(parent),mPainter(),mImage(1,1,QImage::Format_ARGB32),mBrushSize(10),mBlurSmoothness(15),mBrushColor(Qt::white)
+ :QWidget(parent),mPainter(),mImage(1,1,QImage::Format_ARGB32),mBrushSize(10),mBrushColor(Qt::white)
 {
     mMainWindow=static_cast<QMainWindow*>(parent);
     mImage.fill(0xFF000000);
@@ -92,20 +91,9 @@ void SketchingWidget::fastMarchSketch(QImage& image)
     for(int i=width-1;i>=0;i--) for(int j=height-1;j>=0;j--) buffer[i][j]=qMin(buffer[i][j],newMarchValue(buffer,maxDistance,i,j));
 
     float varTerm=sqrt(sqr(width)+sqr(height));
-    for(uint i=0;i<width;i++) for(uint j=0;j<height;j++){ float val=exp(-sqr(buffer[i][j]/(mBlurSmoothness*varTerm)))*255; image.setPixel(i,j,qRgb(val,val,val)); }
+    for(uint i=0;i<width;i++) for(uint j=0;j<height;j++){ float val=exp(-sqr(buffer[i][j]/(15*varTerm)))*255; image.setPixel(i,j,qRgb(val,val,val)); }
 
     for(uint i=0;i<width;i++) delete[] buffer[i]; delete[] buffer;
-}
-//####################################################################
-// Function blurSketch
-//####################################################################
-void SketchingWidget::blurSketch()
-{
-    QtImageFilter* gaussianFilter=QtImageFilterFactory::createImageFilter("GaussianBlur");
-    gaussianFilter->setOption(QtImageFilter::Radius,mBlurSmoothness);
-    gaussianFilter->setOption(QtImageFilter::FilterChannels,"rgb");
-    mImage=gaussianFilter->apply(mImage,mImage.rect());
-    refresh();
 }
 //####################################################################
 // Function newMArchValue
@@ -132,22 +120,10 @@ void SketchingWidget::setupMenuAndButton()
     connect(loadImageAct,SIGNAL(triggered()),this,SLOT(loadImageFromFile()));
     imageMenu->addAction(loadImageAct);
 
-    QAction* setSmoothnessAct=new QAction(tr("Set smoothness..."),mMainWindow);
-    setSmoothnessAct->setStatusTip(tr("Set the blur smoothness parameter"));
-    connect(setSmoothnessAct,SIGNAL(triggered()),this,SLOT(setBlurSmoothness()));
-    imageMenu->addAction(setSmoothnessAct);
-
-//    QToolBar* mSketchToolBar=mMainWindow->addToolBar(tr("SketchToolBar"));    
-
     QAction* clearImageAct=new QAction(tr("Clear"), mMainWindow);
     clearImageAct->setStatusTip(tr("Clear SKetch image"));
     connect(clearImageAct,SIGNAL(triggered()),this,SLOT(clear()));
     imageMenu->addAction(clearImageAct);
-
-    QAction* blurSketchAct=new QAction(tr("BlurSketch"), mMainWindow);
-    blurSketchAct->setStatusTip(tr("Blur SKetch image"));
-    connect(blurSketchAct,SIGNAL(triggered()),this,SLOT(blurSketch()));
-    imageMenu->addAction(blurSketchAct);
 
     QAction* pickBrushColorAct=new QAction(tr("PickColor"), mMainWindow);
     pickBrushColorAct->setStatusTip(tr("Pick Brush Color"));
@@ -166,14 +142,6 @@ void SketchingWidget::loadImageFromFile()
     refresh();
 }
 //####################################################################
-// Function setBlurSmoothness
-//####################################################################
-void SketchingWidget::setBlurSmoothness()
-{
-    double smoothness=QInputDialog::getDouble(mMainWindow,tr("Set the blur smoothness"),tr("Smoothness:"),mBlurSmoothness,-50,50,5);
-    mBlurSmoothness=smoothness;
-}
-//####################################################################
 // Function pickColor
 //####################################################################
 void SketchingWidget::pickColor()
@@ -181,6 +149,6 @@ void SketchingWidget::pickColor()
     QColorDialog dialog(mBrushColor, mMainWindow);
     dialog.setOption(QColorDialog::ShowAlphaChannel, true);
     if (dialog.exec() == QDialog::Accepted)
-        mBrushColor=dialog.selectedColor();    
+        mBrushColor=dialog.selectedColor();
 }
 //####################################################################

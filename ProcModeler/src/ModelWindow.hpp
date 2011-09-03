@@ -9,7 +9,7 @@
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 
-typedef enum TargetWidget {IMAGE, VOXEL, MA} WidgetType;
+typedef enum TargetWidget {IMAGE} WidgetType;
 
 class ModelRenderWidget;
 class SketchingWidget;
@@ -30,7 +30,7 @@ protected:
     QWidget* mTargetWidget;
     QDockWidget* mControlPanel;
     ProceduralModel* mModel;
-	ModelSimulation* mSimulation;
+    ModelSimulation* mSimulation;
     unsigned long mNumIterations;
     QString mModelPluginPath;
     bool mModelLoaded;
@@ -38,7 +38,6 @@ protected:
     QSpinBox *mGlobalLogSB,*mNumReplicasSB;
     QDoubleSpinBox *mTemperatureExponentSB;
     QDoubleSpinBox *mFalsePositiveSB,*mFalseNegativeSB,*mLikelihoodMultiplierSB;
-    QDoubleSpinBox *mVoxelMissingSB,*mEmptyHittingSB,*mLikelihoodFactorSB;
 
 public:
     ModelWindow(TargetWidget target=IMAGE);
@@ -52,7 +51,7 @@ protected:
     void resetPTparam(int numReplicas, float temperatureExponent);
     virtual void keyPressEvent(QKeyEvent* event);
     virtual void keyReleaseEvent(QKeyEvent* event);
-	ProceduralModel* newModel() const;
+    ProceduralModel* newModel() const;
 
 private slots:
     void openModel();
@@ -90,12 +89,6 @@ private slots:
     void setLikelihoodMultiplier(double);
     void toggleIgnoreColor();
     void toggleSim();
-    void setVoxelMissingFactor();
-    void setVoxelMissingFactor(double);
-    void setEmptyHittingFactor();
-    void setEmptyHittingFactor(double);
-    void setLikelihoodFactor();
-    void setLikelihoodFactor(double);
     void setNumReplicas();
     void setNumReplicas(int);
     void setTemperatureExponent();

@@ -3,6 +3,7 @@
 // This software is governed by the license contained in LICENSE.
 //#####################################################################
 
+#include <iostream>
 #include <QApplication>
 #include <QFileDialog>
 #include "Common.hpp"
@@ -23,8 +24,6 @@ int main(int argc,char** argv)
     else if(args.size()==2)
     {
         if(args.at(1)=="-image" || args.at(1)=="-i") widgetType=IMAGE;
-        else if(args.at(1)=="-voxel" || args.at(1)=="-v") widgetType=VOXEL;
-        else if(args.at(1)=="-mon" || args.at(1)=="-m") widgetType=MA;
         else validArgs=false;
     }
     else validArgs=false;
