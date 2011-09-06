@@ -12,9 +12,6 @@ if base_dir == nil then puts 'Failure: PROC_MOD_BASE_DIR is not set'; exit end
 sys_name = ''
 rm_string = ''
 case RbConfig::CONFIG['host_os']
-when /mswin|windows|mingw32/i
-  sys_name = 'windows'
-  rm_string = 'del /Q '
 when /linux/i
   sys_name = 'linux'
   rm_string = 'rm '
@@ -51,10 +48,10 @@ initial_file.each_line do |line|
     final_file.puts('TEMPLATE = lib')
     final_file.puts('QT += opengl')
     final_file.puts('CONFIG += debug_and_release plugin build_all')
-    final_file.puts('INCLUDEPATH += ../../src ../../../Common/include/')
+    final_file.puts('INCLUDEPATH += ../../Source ../../../Common/include/')
     final_file.puts('DESTDIR = ../../Plugins')
     final_file.puts('QMAKE_CXXFLAGS_RELEASE += -O3 -fvisibility=hidden')
-    final_file.puts('QMAKE_LIBDIR += '+base_dir+'/Code/Common/lib')
+    final_file.puts('QMAKE_LIBDIR += '+base_dir+'/Common/lib')
 
     if(sys_name == 'mac')
       final_file.puts('INCLUDEPATH += /usr/local/include /usr/include /opt/local/include')
@@ -62,9 +59,6 @@ initial_file.each_line do |line|
       final_file.puts('QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.6')
     elsif sys_name == 'linux'
       final_file.puts('QMAKE_CXX = g++-4.3')
-    elsif sys_name == 'windows'
-      final_file.puts('DEFINES += NOMINMAX')
-      final_file.puts('DEFINES += _BIND_TO_CURRENT_VCLIBS_VERSION')
     end
 
   elsif /^TARGET.+/ =~ line
@@ -91,7 +85,5 @@ case sys_name
 when 'mac'
   system('qmake -spec macx-g++ ' + project_file_name)
 when 'linux'
-  system('qmake -makefile ' + project_file_name)
-when 'windows'
   system('qmake -makefile ' + project_file_name)
 end

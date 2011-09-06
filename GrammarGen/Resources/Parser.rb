@@ -1,4 +1,4 @@
-#!/usr/bin/ruby1.9
+2#!/usr/bin/ruby1.9
 
 #############################################################
 # Includes                                                  #
@@ -176,7 +176,7 @@ class Parser
     voxelMethods = {}
 
     @fileName=grammarName
-    @targetDirectoryName = "#{@baseDir}/Code/GrammarGen/GenSources/#{grammarName}/"
+    @targetDirectoryName = "#{@baseDir}/GrammarGen/Source/#{grammarName}/"
 
     targetDirectoryEntries = []
 
@@ -246,7 +246,7 @@ class Parser
     puts "Building plugin..."
 
     bootstrapFile = File.open(@targetDirectoryName+"Bootstrap","w")
-    bootstrapFileContents=File.open("#{@baseDir}/Code/GrammarGen/Resources/BootstrapStub").readlines.join
+    bootstrapFileContents=File.open("#{@baseDir}/GrammarGen/Resources/BootstrapStub").readlines.join
     bootstrapFileContents.gsub!("%PROJECTNAME%",@fileName)
     bootstrapFile.write(bootstrapFileContents)
     bootstrapFile.close

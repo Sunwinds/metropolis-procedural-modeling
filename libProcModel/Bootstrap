@@ -12,9 +12,6 @@ if base_dir == nil then puts 'Failure: PROC_MOD_BASE_DIR is not set'; exit end
 sys_name = ''
 rm_string = ''
 case RbConfig::CONFIG['host_os']
-when /mswin|windows|mingw32/i
-  sys_name = 'windows'
-  rm_string = 'del /Q '
 when /linux/i
   sys_name = 'linux'
   rm_string = 'rm '
@@ -34,15 +31,6 @@ if sys_name == 'linux' or sys_name == 'mac'
   if File.exists?('Makefile') then system(rm_string + 'Makefile') end
   if File.exists?('Makefile.Debug') then system(rm_string + 'Makefile.Debug') end
   if File.exists?('Makefile.Release') then system(rm_string + 'Makefile.Release') end
-elsif sys_name == 'windows'
-  if File.exists?(project_file_name) then system(rm_string + project_file_name) end
-  if File.exists?(project_file_name + '.tmp') then system(rm_string + project_file_name + '.tmp') end
-  filesToDeleteDebug = ['ProcModel_d.ncb','ProcModel_d.sln','ProcModel_d.vcproj','ProcModel_d_resource.rc']
-  filesToDelete = ['ProcModel.ncb','ProcModel.sln','ProcModel.vcproj','ProcModel_resource.rc', 'vc90.idb','vc90.pdb']
-  foldersToDelete = ['.lib','debug','release', 'x64']
-  filesToDeleteDebug.each{ |item| if File.exists?(item) then system('del ' + item) end }
-  filesToDelete.each{ |item| if File.exists?(item) then system('del ' + item) end }
-  foldersToDelete.each{ |item| if File.exists?(item) then system('rmdir /S /q ' + item) end }
 end
 
 #############################
@@ -70,13 +58,9 @@ initial_file.each_line do |line|
       final_file.puts('INCLUDEPATH += /usr/local/include /usr/include /opt/local/include')
       final_file.puts('LIBS += -L/opt/local/lib -L/usr/lib/ -L/usr/local/lib')
       final_file.puts('QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.6')
-      final_file.puts('QMAKE_LFLAGS_SONAME = -install_name$${LITERAL_WHITESPACE}' + base_dir + '/Code/Common/lib/')
+      final_file.puts('QMAKE_LFLAGS_SONAME = -install_name$${LITERAL_WHITESPACE}' + base_dir + '/Common/lib/')
     elsif sys_name == 'linux'
       final_file.puts('QMAKE_CXX = g++-4.3')
-    elsif sys_name == 'windows'
-      final_file.puts('INCLUDEPATH += ' + ENV['QTDIR'] + '/include')
-      final_file.puts('DEFINES += NOMINMAX')
-      final_file.puts('DEFINES += _BIND_TO_CURRENT_VCLIBS_VERSION')
     end
 
   elsif /^TARGET.+/ =~ line
@@ -93,11 +77,11 @@ initial_file.close
 final_file.puts('# Installation')
 final_file.puts('headers.files = $$HEADERS')
 if sys_name == 'mac' or sys_name == 'linux'
-  final_file.puts('unix:headers.path = ' + base_dir + '/Code/Common/include')
-  final_file.puts('unix:target.path = ' + base_dir + '/Code/Common/lib')
+  final_file.puts('unix:headers.path = ' + base_dir + '/Common/include')
+  final_file.puts('unix:target.path = ' + base_dir + '/Common/lib')
 else
-  final_file.puts('headers.path = \'' + base_dir + '/Code/Common/include\'')
-  final_file.puts('target.path = \'' + base_dir + '/Code/Common/lib\'')
+  final_file.puts('headers.path = \'' + base_dir + '/Common/include\'')
+  final_file.puts('target.path = \'' + base_dir + '/Common/lib\'')
 end
 final_file.puts('INSTALLS += headers target')
 
@@ -112,7 +96,5 @@ case sys_name
 when 'mac'
   system('qmake -spec macx-g++ ' + project_file_name)
 when 'linux'
-  system('qmake -makefile ' + project_file_name)
-when 'windows'
   system('qmake -makefile ' + project_file_name)
 end
