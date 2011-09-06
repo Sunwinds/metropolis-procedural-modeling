@@ -6,32 +6,12 @@ require 'rbconfig'
 # Each time a file is added or removed, the script must be re-run and a new project file generated.#
 ####################################################################################################
 
-use_cuda = false
-
-if ARGV.length == 0 then use_cuda = false
-elsif ARGV.length == 1 and ARGV[0] == '--cuda'
-  use_cuda = true
-  cuda_inc_dir = ENV['CUDA_INC_PATH']
-  cuda_lib_dir = ENV['CUDA_LIB_PATH']
-  cuda_bin_dir = ENV['CUDA_BIN_PATH']
-  cuda_toolkit_dir = ENV['NVSDKCOMPUTE_ROOT']
-
-  if cuda_inc_dir == nil then print 'Failure CUDA_INC_DIR is not set'; exit
-  elsif cuda_lib_dir == nil then print 'Failure CUDA_LIB_DIR is not set'; exit
-  elsif not ENV['PATH'].include?(cuda_bin_dir) then puts 'Failure CUDA_BIN_DIR is not in your path'; exit
-  end
-else puts 'Usage ./Bootstrap [--cuda]'; exit
-end
-
 base_dir = ENV['PROC_MOD_BASE_DIR']
 if base_dir == nil then puts 'Failure: PROC_MOD_BASE_DIR is not set'; exit end
 
 sys_name = ''
 rm_string = ''
 case RbConfig::CONFIG['host_os']
-when /mswin|windows|mingw32/i
-  sys_name = 'windows'
-  rm_string = 'del /Q '
 when /linux/i
   sys_name = 'linux'
   rm_string = 'rm '
@@ -42,8 +22,8 @@ end
 
 if sys_name == "linux"
   ld_lib_path = ENV['LD_LIBRARY_PATH']
-  if not ld_lib_path.include?(base_dir+'Code/Common/lib')
-    puts 'Failure LD_LIBRARY_PATH does not contain ' + base_dir+'/Code/Common/lib'
+  if not ld_lib_path.include?(base_dir+'Common/lib')
+    puts 'Failure LD_LIBRARY_PATH does not contain ' + base_dir+'Common/lib'
     exit
   end
 end
@@ -69,15 +49,6 @@ if sys_name == 'linux' or sys_name == 'mac'
     system('rm -rf release')
     system('rm -rf build')
   end
-elsif sys_name == 'windows'
-  if File.exists?(project_file_name) then system(rm_string + project_file_name) end
-  if File.exists?(project_file_name + '.tmp') then system(rm_string + project_file_name + '.tmp') end
-  filesToDeleteDebug = ['ProcModeler_d.ncb','ProcModeler_d.sln','ProcModeler_d.vcproj','ProcModeler_d_resource.rc']
-  filesToDelete = ['ProcModeler.ncb','ProcModeler.sln','ProcModeler.vcproj','ProcModeler_resource.rc', 'vc90.idb','vc90.pdb']
-  foldersToDelete = ['debug','release']
-  filesToDeleteDebug.each{ |item| if File.exists?(item) then system('del ' + item) end }
-  filesToDelete.each{ |item| if File.exists?(item) then system('del ' + item) end }
-  foldersToDelete.each{ |item| if File.exists?(item) then system('rmdir /S /q ' + item) end }
 end
 
 ###############################
@@ -88,8 +59,6 @@ system('qmake -project -nopwd src -o %s.tmp'%project_file_name)
 #########################
 # Create final PRO file #
 #########################
-if use_cuda then  cuda_file_contents=File.open('Resources/QMakeCuda','r').read end
-
 initial_file = File.open(project_file_name + '.tmp','r')
 final_file = File.open(project_file_name,'w')
 
@@ -100,7 +69,6 @@ initial_file.each_line do |line|
     final_file.puts('INCLUDEPATH += ../Common/include')
     final_file.puts('QMAKE_LIBDIR += ../Common/lib')
     final_file.puts('VERSION = %s'%version)
-    final_file.puts('include(QtImageFilter/src/qtimagefilters.pri)')
     final_file.puts('DESTDIR = .')
 
     if(sys_name == 'linux')
@@ -114,25 +82,6 @@ initial_file.each_line do |line|
       final_file.puts('CONFIG -= app_bundle')
       final_file.puts('TEMPLATE = app')
       final_file.puts('QMAKE_CXXFLAGS_RELEASE+= -O3') 
-    elsif(sys_name == 'windows')
-      final_file.puts('CONFIG += windows')
-      final_file.puts('DEFINES += NOMINMAX')
-      final_file.puts('DEFINES += _BIND_TO_CURRENT_VCLIBS_VERSION')
-      final_file.puts('LIBS += glew32.lib')
-      final_file.puts('TEMPLATE = app')
-    end
-
-    if use_cuda
-      final_file.puts('DEFINES += USE_CUDA')
-      final_file.puts('INCLUDEPATH += ' + cuda_inc_dir +'')
-      if (sys_name == 'mac' or sys_name == 'linux')
-        final_file.puts('LIBS += -L' + cuda_lib_dir + ' -lcudart')
-        final_file.puts('CUSOURCES = ./src/*.cu')
-        if(sys_name == 'linux')
-          final_file.puts('QMAKE_CXX = g++-4.3')
-          final_file.puts('QMAKE_CUEXTRAFLAGS += --compiler-bindir=/usr/bin/gcc-4.3')
-        end
-      end
     end
   elsif /^TARGET.+/ =~ line
     final_file.puts('CONFIG(debug, debug|release) {')
@@ -145,25 +94,13 @@ initial_file.each_line do |line|
   end
 end
 
-
 initial_file.close
-
-if use_cuda then final_file.puts(cuda_file_contents) end
 
 final_file.close
 
 system(rm_string + '%s.tmp'%project_file_name)
 
 ########################################
-# Generate platform specific build files #
+# Generate build files                 #
 ########################################
-case sys_name
-when 'mac'
-  if use_cuda then system('qmake -spec macx-g++ ' + project_file_name)
-  else system('qmake -spec macx-xcode ' + project_file_name)
-  end
-when 'linux'
-  system('qmake -makefile ' + project_file_name)
-when 'windows'
-  system('qmake -t vcapp ' + project_file_name)
-end
+system('qmake -makefile ' + project_file_name)
