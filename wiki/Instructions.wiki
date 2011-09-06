@@ -1,7 +1,23 @@
 #summary Instructions for building the code.
 
+MPM has been tested on Linux and OS X: there is no support for Windows.
+
 = Prerequisites =
 
  * Qt 4
+ * Ruby 1.9 (using Ruby 1.8 will cause silent failures due an implicit dependence in the codebase on an insertion-order preserving hash)
  * GLEW
  * polyglot, treetop
+
+= Setup =
+ * Check out the codebase to some directory, and set an environment variable PROC_MOD_BASE_DIR pointing to this location.
+ * Add PROC_MOD_BASE_DIR/Common/lib to LD_LIBRARY_PATH
+ * Build libProcModel via Bootstrap, make, and make install.
+ * Build ProcModeler (you do not need to install it)
+ * Compile a grammar by running ./Parser Grammars/GrammarName.  This will create a directory in Grammars/Source/ with the shell code for that grammar: you will need to update the render methods.  Once this is done, run the parser a second time.
+ * Now, load the ProcModeler, and load the grammar from GrammarGen/Plugins.
+
+= Notes =
+ * Many of the included grammars do not have render method at present.  See Willow for a grammar that is fully implemented.
+ * You can check the treetop files to see the metagrammar that's defined for writing your own grammars.
+ * Only sketch based targeting is included in this release: however, it's easy to replace this targeting function with your own.
