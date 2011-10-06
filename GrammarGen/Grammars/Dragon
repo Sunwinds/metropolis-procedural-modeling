@@ -1,0 +1,4 @@
+Axiom: F(1)X;
+DerivationLength: 20;
+X -> X+(90)YF(1);
+Y -> F(1)X-(90)Y;

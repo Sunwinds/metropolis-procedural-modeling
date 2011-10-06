@@ -1,0 +1,28 @@
+// Hilbert Curve
+
+#define la1  UniformSample(85,95)
+#define la2  UniformSample(265,275)
+#define la3  UniformSample(265,275)
+#define la4  UniformSample(85,95)
+
+#define ra1  UniformSample(265,275)
+#define ra2  UniformSample(85,95)
+#define ra3  UniformSample(85,95)
+#define ra4  UniformSample(265,275)
+
+#define aa   270
+#define steps 10
+
+DerivationLength: 10;
+Axiom : Collisioninit(-1,-1,1,1,1,1,1)+(aa)L(0);
+
+Collisioninit(minx,miny,maxx,maxy,sizex,sizey,n) -> Collisioninit(-2*n-2, -2*n-2, 2*n+2, 2*n + 2, 2*n+1, 2*n+1, 2*n+1);
+
+//L(n) < n/steps > -> S(1);
+L(n) < 1 - n / steps > -> +(la1)R(n+1)Line(1) +(la2)L(n+1)Line(1)L(n+1) +(la3)Line(1)R(n+1) +(la4);
+
+//R(n) < n/steps > -> S(1);
+
+R(n) < 1 - n/steps> -> +(ra1)L(n+1)Line(1) +(ra2)R(n+1)Line(1)R(n+1) +(ra3)Line(1)L(n+1) +(ra4);
+
+S(n) -> S(2*n+1);

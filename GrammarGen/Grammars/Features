@@ -1,0 +1,39 @@
+// A Modification of a grammar from The Algorithmic Beauty of Plants
+
+#define initial_angle 11.0
+#define falloff_factor 0.5
+#define initial_level 0
+#define max_levels 6
+
+// An array
+@array = {1,2,3.5,7,10};
+
+// The depth limit
+
+DerivationLength: 6;
+
+// The axiom
+
+Axiom: A(initial_level, initial_angle);
+
+// The productions
+//
+// Here, C takes three parameters: a length, and then RGB values for the segment it draws.
+// It's render method should look like the following:
+//
+// glColor3f(params[1],params[2],params[3]);
+//    glBegin(GL_LINES); glVertex3f(0,0,0); glVertex3f(0,params[0],0); glEnd();
+// glColor3f(1,1,1);
+//
+
+A(level, angle) <1-level/max_levels> -> 
+               A(level, angle) [ +(angle) C(UniformSample(0,level),level/max_levels,0,0) +(angle) A(level+1, falloff_factor*angle) ]
+               A(level, angle) [ -(angle) C(UniformSample(0,level),0,level/max_levels,0) -(angle) A(level+1, falloff_factor*angle) ]
+               A(level, angle) F(1) G(1,2);
+
+F(a) -> F(a)F(a);
+
+A(level, angle) <level/max_levels> -> C(UniformSample(0,level),0,0,1);
+
+G(a,b)<a/b> : a+b>=0 && a+1<10 -> F(@array{a/2+1});
+G(a,b)<b/a> : a-b>=0 && b+1<5 -> F(@array{a/2+1});

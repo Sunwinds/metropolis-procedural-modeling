@@ -1,0 +1,3 @@
+Axiom : F(1);
+DerivationLength: 10;
+F(a)->+(45)F(a)-(45)-(45)F(a)+(45);
