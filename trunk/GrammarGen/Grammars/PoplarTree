@@ -1,0 +1,70 @@
+// Branch density: 1.6 seems too low, 2 is high
+#define branch_density 1.7
+#define width_growth 1.5
+
+// try 30 as well
+#define DerLength 30
+
+#define branch_length floor(DerLength/3.3)
+
+DerivationLength: DerLength;
+
+// reduce trunk probability when reducing derivation length for 30 use prob 20
+#define trunk_prob   (DerLength*0.66)
+
+
+// Stem length variation: 1 no variation, 0.5 is nice, 0.1 wild
+#define stem_length_variation 0.3
+
+#define	angle_left  33
+#define angle_right 26
+
+//#define	angle_left  UniformSample(25,45)
+//#define angle_right UniformSample(25,45)
+#define angle_mono UniformSample(60,90)
+#define phylo_angle 137.5
+
+#define initial_width 0.005
+#define trunk_length UniformSample(1,3)
+
+#define scale_mono 0.99
+#define scale_left  0.85
+#define scale_right  0.87
+#define branch_scale 0.5
+
+#define upward_tendency 0.17
+#define leaf_upward_tendency 1
+#define leaf_gravity -0.5
+
+#define StemLength(s) UniformSample(s*stem_length_variation,s)
+
+Axiom: X;
+
+X -> Color(0.6,0.3,0.1)/(phylo_angle+NormalSample(0,180))Width(initial_width,branch_length)Stem(StemLength(2))M(1,1);
+
+///// Monopodial branching
+// with a small probability switch to sympodial branching 
+M(n,s) < 1-trunk_prob/(n) > -> A(branch_length + (DerLength-3-n-branch_length)*floor(1+(branch_length-(DerLength-1-n))/100), s*branch_scale, phylo_angle,1);
+
+M(n,s) < trunk_prob/n > -> /(phylo_angle+NormalSample(0,30))[-(angle_mono)/(90)A(branch_length + (DerLength-3-n-branch_length)*floor(1+(branch_length-(DerLength-1-n))/100), s*branch_scale, phylo_angle, 1)] Width(initial_width, branch_length) Stem(StemLength(s*0.5)) M(n+1,s*scale_mono);
+
+// Terminate branch when n is 0
+A(n,s,pa,asc) <floor(1-n/100)+floor(1-n/branch_length) + (branch_length-n) / branch_length/50> -> E;
+
+// Two new branches
+A(n,s,pa,asc) < branch_density/sqrt(branch_length - n + 0.01) > -> Width(initial_width,n) Stem(StemLength(s))/(pa) [-(angle_left*asc)A(n-1,s*scale_left,pa,asc)] +(angle_right*asc)A(n-1,s*scale_right,pa,asc);
+
+// One new branch
+A(n,s,pa,asc) < 1 - branch_density/sqrt(branch_length-n + 0.01)> -> Width(initial_width,n)Stem(StemLength(s)) L(s,n) /(pa) +(angle_right)A(n-1,s*scale_right,pa,asc);
+
+// Switch between flat and 3D branch
+//A(n,s,pa,asc) < 1/(n*n) > -> A(n,s,pa,asc);
+//A(n,s,pa,asc) < 1/(n*n) > -> A(n,s,180,0.5);
+
+// Increase width while n is positive
+Width(width,n) <1-floor(1-n/100)> -> Width(width*width_growth,n-1);
+Width(width,n) <floor(1-n/100)> -> Width(width, n);
+
+// Leaves
+L(s,n) <1-floor(n/7)> -> Color(0.1,0.7,0) [^(130) Turnztovec(0,leaf_upward_tendency,0) Turntovec(0,leaf_gravity,0)Leafconnector(s*0.3*1.1)Leaf(s*0.7,s*0.7)][/(180)^(130) Turnztovec(0,leaf_upward_tendency,0) Turntovec(0,leaf_gravity,0)Leafconnector(s*0.3*1.1)Leaf(s*0.7,s*0.7)] Color(0.6,0.3,0.1);
+Leafwithstalk(s,n) <floor(n/7)> -> E;

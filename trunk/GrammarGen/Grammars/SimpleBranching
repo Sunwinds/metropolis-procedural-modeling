@@ -1,0 +1,11 @@
+#define	angle_left  35
+#define angle_right 35
+#define max_levels   50
+
+DerivationLength: 50;
+
+Axiom : A(1);
+
+A(n) < 1/n > -> [-(angle_left) F(1) A(n+1)] +(angle_right) F(1) A(n+1);
+A(n) < 1 - 1/n> -> +(angle_left) F(1) A(n+1);
+//A(n) < n/max_levels > -> T;

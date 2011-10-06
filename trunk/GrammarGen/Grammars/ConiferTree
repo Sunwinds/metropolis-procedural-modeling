@@ -1,0 +1,101 @@
+// Branch density: 1.6 seems too low, 2 is high
+#define branch_density 2
+#define width_growth 1.16
+#define branch_length 10
+
+#define treeHeight  20
+
+#define derSteps 27
+
+DerivationLength: derSteps;
+
+// Stem length variation: 1 no variation, 0.5 is nice, 0.1 wild
+#define stem_length_variation 0.3
+
+// 5
+#define	angle0  UniformSample(-15,25)
+// -50
+#define angle1 UniformSample(-70,-30)
+// 60
+#define angle2 UniformSample(40,80)
+
+// 60 degrees in original model
+#define angle_mono UniformSample(60,90)
+#define phylo_angle 137.5
+
+#define initial_width 0.005
+#define trunk_prob   150
+#define trunk_length UniformSample(1,3)
+
+#define scale_mono 0.99
+@scale = {0.99, 0.99, 0.99};
+
+#define branch_scale 0.65
+
+#define upward_tendency 0.06
+#define leaf_upward_tendency 1
+#define leaf_gravity -0.5
+
+
+
+#define StemLength(s) UniformSample(s*stem_length_variation,s)
+
+Axiom: X;
+X -> Color(0.6,0.3,0.1)/(phylo_angle+NormalSample(0,180))Width(initial_width,treeHeight)Stem(StemLength(1),treeHeight,1)M(treeHeight,1);
+
+///// Monopodial branching
+
+#define Branch(iwidth,len,n,t) Width(iwidth, n) Stem(StemLength(len),n,t) L(len,n)
+
+M(nmain,s) : nmain > 0 -> Mcount(nmain,branch_length*(nmain)*2/treeHeight,s) /(UniformSample(0,180))+(UniformSample(0,10)) Turntovec(0, 3,0) Branch(initial_width,s*1.0, nmain,1) M(nmain-1,s*scale_mono);
+M(nmain,s) : nmain == 0 -> E(0);
+
+// how many branches off the trunk
+#define lerpWithm(x1,x2) ((x1 * m + x2 * (treeHeight - m)) / treeHeight)
+
+#define BUDGET(m,n) (n*n*lerpWithm(2,6))
+
+Mcount(m,n,s) < lerpWithm(0.6,0.6) > -> Bmain(m,n,s,3,BUDGET(m,n)/3);
+Mcount(m,n,s) < lerpWithm(0.3,0.3) > -> Bmain(m,n,s,2,BUDGET(m,n)/2);
+Mcount(m,n,s) < lerpWithm(0.05,0.05) > -> Bmain(m,n,s,1,BUDGET(m,n));
+Mcount(m,n,s) < lerpWithm(0.05,0.05) > -> Bmain(m,n,s,0,0);
+
+Bmain(m,n,s,c,budget) : c > 0 -> [+(angle_mono)/(90)Blength(m,n,s*branch_scale,budget) ] /(phylo_angle+NormalSample(0,30)) Bmain(m,n,s,c-1,budget);
+
+// Set the branch length here
+#define ShortenBranch(num,mnum,prob) Blength(m,n,s,budget) < prob > : n > num && m > mnum -> A(m,n-num, s, 180, 1, budget - num*num*2);
+
+ShortenBranch(0,0,0.20)
+ShortenBranch(1,1,0.15)
+ShortenBranch(2,2,0.12)
+ShortenBranch(3,0,0.10)
+ShortenBranch(4,0,0.10)
+ShortenBranch(5,0,0.05)
+ShortenBranch(6,0,0.05)
+ShortenBranch(7,0,0.05)
+ShortenBranch(8,0,0.05)
+
+
+// Terminate branch when n is 0
+#define THREE_BRANCH_PROB (0.2*branch_density/sqrt(n))
+#define TWO_BRANCH_PROB (branch_density/sqrt(n))
+
+
+// three new branches
+A(m,n,s,pa,asc,budget) < THREE_BRANCH_PROB > : n > 0 && budget >= 4 -> /(pa+UniformSample(-5,5))Horizontal Turntovec(0, upward_tendency,0)Branch(initial_width*0.7,s,n,3) [+(angle0*asc)A(m,n-1,s*@scale{0},pa,asc*-1,(budget-1)*0.4)] [+(angle1*asc)A(m,n-1,s*@scale{1},pa,asc*-1,(budget-1)*0.3)] +(angle2*asc)A(m,n-1,s*@scale{2},pa,asc*-1,(budget-1)*0.3);
+
+// Two new branches
+A(m,n,s,pa,asc,budget) < TWO_BRANCH_PROB > : n > 0 && budget >= 2.7 -> /(pa+UniformSample(-5,5))Horizontal Turntovec(0, upward_tendency,0)Branch(initial_width*0.7,s,n,2) [+(angle0*asc)A(m,n-1,s*@scale{0},pa,asc*-1,(budget-1)*0.6)] +(angle1*asc)A(m,n-1,s*@scale{1},pa,asc*-1,(budget-1)*0.4);
+
+// One new branch
+A(m,n,s,pa,asc,budget) < 1 - THREE_BRANCH_PROB - TWO_BRANCH_PROB > : n > 0 && budget >= 0 -> /(pa+UniformSample(-5,5)) Horizontal Turntovec(0,upward_tendency*0.5,0) Branch(initial_width*0.7,s,n,1) +(angle0)A(m,n-1,s*@scale{0},pa,asc*-1,budget-1);
+
+A(m,n,s,pa,asc,budget) <0.01>  -> /(UniformSample(-5,5)) E(n);
+
+// Increase width while n is positive
+Width(width,n) : n > 0 -> Width(width*width_growth,n-1);
+//Width(width,n) : n == 0 -> Width(width, n);
+
+// Leaves
+Lt(s,n) : n < 7 -> Color(0.1,0.7,0) [^(70) Turnztovec(0,leaf_upward_tendency,0) Turntovec(0,leaf_gravity,0)Leafconnector(s*0.3)Leaf(s*0.5,s)][/(180)^(70) Turnztovec(0,leaf_upward_tendency,0) Turntovec(0,leaf_gravity,0)Leafconnector(s*0.3)Leaf(s*0.5,s)] Color(0.6,0.3,0.1);
+//Lt(s,n) : n >= 7 -> E;

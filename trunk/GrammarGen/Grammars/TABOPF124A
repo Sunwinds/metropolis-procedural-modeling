@@ -1,0 +1,5 @@
+Axiom : F(1);
+
+DerivationLength: 5;
+
+F(a)->F(1)[+F(1)]F(1)[-F(1)]F(1);

@@ -1,0 +1,399 @@
+
+#define isize   4
+#define iheight 4
+
+#define floor_height 0.4
+#define ground_floor_height 0.4
+
+#define tile_width 0.4
+
+// A shape is defined by 4 pairs of coordinates and one float value,
+// specifying 4 points at the base and the height. 
+// For splits it is assumed that points p0 and p1 are facing negative z
+
+// Macros defining rules:
+
+// Symbol stores: size x, y and z (in number of tiles), n (how many blocks), type and count
+
+#define ExtraParams ,oldmaxz,type
+
+#define Symbol1(P) P(nx,ny,nz,n ExtraParams)
+#define Symbol(P) P(nx,ny,nz,v1,v2,v3,v4,vt,vb)
+
+///////////////////////////////////////////////////////////////////////////////////////
+#define minx 6
+#define miny 16
+#define minz 6
+#define maxx 16
+#define maxy 90
+#define maxz 16
+
+#define minn 20 // min number of building blocks to be created
+#define maxn 60
+
+DerivationLength: 300;
+Axiom : Color(0.7,0.7,0.6) Box1(minx,maxx, miny,maxy+floor(maxn/2), minz,maxz, minn,maxn, maxz, 0);
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+#define MakeRandom(S1,S2a,S2b,n1,n2,n) \
+S1 <1/(n2-n1+1)>: n >= n1 && n <= n2 -> S2a n S2b
+
+#define MakeRandomTop(S1,S2a,S2b,n1,n2,n) \
+S1 <0.25/(n2-n1+1)>: n >= n1 && n <= n2 -> S2a n S2b
+
+#define MakeRandomZ(S1,S2a,S2b,n1,n2,n) \
+S1 <1/(n2-n1+1)>: n >= n1 && n <= n2 -> Movexz(0,floor((n2-n)/2)*tile_width) S2a n S2b
+
+// replace xmin,xmax with a random value in the interval
+#define B1 Box1(xmin,xmax,ymin,ymax,zmin,zmax,nmin,nmax ExtraParams)
+#define B1a Box2(
+#define B1b ,ymin,ymax,zmin,zmax,nmin,nmax ExtraParams)
+
+MakeRandom(B1,B1a,B1b,xmin,xmax,1); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,2); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,3); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,4); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,5); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,6); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,7); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,8); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,9); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,10); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,11); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,12); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,13); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,14); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,15); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,16); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,17); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,18); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,19); 
+MakeRandom(B1,B1a,B1b,xmin,xmax,20);
+
+// replace ymin,ymax with a random value in the interval
+#define B1 Box2(x,ymin,ymax,zmin,zmax,nmin,nmax ExtraParams)
+#define B1a Box3(x,
+#define B1b ,zmin,zmax,nmin,nmax ExtraParams)
+
+MakeRandom(B1,B1a,B1b,ymin,ymax,0); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,1); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,2); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,3); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,4); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,5); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,6); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,7); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,8); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,9); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,10); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,11); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,12); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,13); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,14); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,15); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,16); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,17); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,18); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,19); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,20);
+MakeRandom(B1,B1a,B1b,ymin,ymax,21); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,22); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,23); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,24); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,25); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,26); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,27); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,28); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,29); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,30); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,31); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,32); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,33); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,34); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,35); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,36); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,37); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,38); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,39); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,40);
+MakeRandom(B1,B1a,B1b,ymin,ymax,41); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,42); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,43); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,44); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,45); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,46); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,47); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,48); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,49); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,50); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,51); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,52); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,53); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,54); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,55); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,56); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,57); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,58); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,59); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,60); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,61); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,62); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,63); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,64); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,65); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,66); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,67); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,68); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,69); 
+MakeRandom(B1,B1a,B1b,ymin,ymax,70);
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,71); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,72); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,73); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,74); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,75); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,76); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,77); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,78); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,79); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,80); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,81); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,82); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,83); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,84); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,85); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,86); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,87); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,88); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,89); 
+MakeRandomTop(B1,B1a,B1b,ymin,ymax,90);
+
+// replace zmin,zmax with a random value in the interval
+#define B1 Box3(x,y,zmin,zmax,nmin,nmax ExtraParams)
+#define B1a Box4(x,y,
+#define B1b ,nmin,nmax ExtraParams)
+
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,1); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,2); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,3); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,4); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,5); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,6); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,7); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,8); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,9); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,10); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,11); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,12); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,13); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,14); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,15); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,16); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,17); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,18); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,19); 
+MakeRandomZ(B1,B1a,B1b,zmin,zmax,20);
+
+// replace nmin,nmax with a random value in the interval
+#define B1 Box4(x,y,z,nmin,nmax ExtraParams)
+#define B1a Block(x,y,z,
+#define B1b ExtraParams)
+
+MakeRandom(B1,B1a,B1b,nmin,nmax,0); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,1); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,2); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,3); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,4); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,5); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,6); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,7); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,8); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,9); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,10); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,11); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,12); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,13); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,14); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,15); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,16); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,17); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,18); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,19); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,20);
+MakeRandom(B1,B1a,B1b,nmin,nmax,21); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,22); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,23); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,24); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,25); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,26); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,27); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,28); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,29); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,30); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,31); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,32); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,33); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,34); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,35); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,36); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,37); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,38); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,39); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,40);
+MakeRandom(B1,B1a,B1b,nmin,nmax,41); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,42); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,43); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,44); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,45); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,46); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,47); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,48); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,49); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,50); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,51); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,52); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,53); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,54); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,55); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,56); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,57); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,58); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,59); 
+MakeRandom(B1,B1a,B1b,nmin,nmax,60);
+
+
+// add more rules if you want to use higher maxn!!!
+
+
+#define prob2 1/20
+
+
+// Symbol of type 0 (axiom) creates two symbols of type 1 going in opposite directions
+Symbol1(Block) : type == 0 -> [Movexz(nx*tile_width,0)Box1(1,maxx,1,ny-1,1,nz,floor(n/2),floor(n/2),nz,2)]  [/(180) Movexz(0*nx*tile_width,-1*nz*tile_width)Box1(1,maxx, 1,ny-1, 1,nz, floor(n/2),floor(n/2),nz,2)]  Blockv(nx,ny,nz,0,oldmaxz,1);
+
+
+// creating one side block of type+1
+Symbol1(Block) <0.4>: (type == 1 || type == 3) && nz >= 3 && n > 0 -> [Movexz(nx*tile_width,0)Box1(1,maxx, 0,ny-1, 1,nz, n-1,n-1, nz,type+1)]  Blockv(nx,ny,nz,0,oldmaxz,type);
+////Symbol1(Block) <0.7>: (type == 1 || type == 3) && nz >= 3 && n > 0 -> [Movexz(nx*tile_width,0)Box1(1,maxx, 0,0, 1,nz, n-1,n-1, nz,type+1)]  Blockv(nx,ny,nz,0,oldmaxz,type);
+// With ternary operator: (ny-1>10?10:ny-1)
+
+// Side block creates only one new block
+Symbol1(Block) : (type == 2 || type == 4) && n > 0 -> [Movexz(nx*tile_width,-1*floor((oldmaxz-nz)/2)*tile_width - floor((maxz - oldmaxz)/2)*tile_width) Box1(minx,maxx, ny,maxy+2*n, nz,maxz, n-1,n-1, maxz,type-1)]  Blockv(nx,ny,nz,0,oldmaxz,type);
+
+// Block of type 1 can create blocks in other directions
+Symbol1(Block) < 0.3> : type == 1 && nz >= 3 && n > 0 -> [Movexz(nx*tile_width,0)Box1(1,maxx,1,ny-1,1,nz,n-1,n-1,nz,2)]  [/(90) Movexz(0*nz*tile_width,0*nx*tile_width)Box1(1,maxx, 1,ny-1, 1,nx, 1,n,nx,4)]  Blockv(nx,ny,nz,0,oldmaxz,type);
+
+// two directions
+Symbol1(Block) < 0.3> : type == 1 && nz >= 3 && n > 0 -> [Movexz(nx*tile_width,0)Box1(1,maxx,1,ny-1,1,nz,n-1,n-1,nz,2)]  [/(90) Box1(1,maxx, 1,ny-1, 1,nx, 1,n, nx,4)] [\(90) Movexz(nz*tile_width,-1*nx*tile_width)Box1(1,maxx,1,ny-1,1,nx, 1,n, nx,4)]  Blockv(nx,ny,nz,0,oldmaxz,type);
+
+// Rules for nuking connectors
+Symbol1(Blockv) <1> : type==2 || type== 4 -> Blocky(nx,ny,nz,UniformSample(0,0.999));
+Symbol1(Blockv) <0.5> : type==1 || type==3 -> Blocky(nx,ny,nz,UniformSample(0,0.999));
+Symbol1(Blockv) <0.5> : type==1 || type==3 -> E;
+
+#define DRESSUP 0
+
+
+#if DRESSUP
+#define Facadesd Facades
+#endif
+
+// Component rule - Make 4 planar faces Facade from Facades, with or without roof
+Symbol(Facadesd) <vt*floor((100+nx-3)/100)*floor((100+nz-3)/100)> -> 
+[Facade(nx, ny,0,v1,vb)]
+[Movexz(nx*tile_width,0)/(270) Facade(nz,ny,1,v2,vb)]
+[Movexz(nx*tile_width,nz*tile_width) /(180) Facade(nx,ny,2,v3,vb)]
+[Movexz(0,nz*tile_width) /(90) Facade(nz,ny,3,v4,vb)] [
+Color(0.7,0.4,0.1)Rooftop(nx*tile_width,nz*tile_width)] [Movexyz(0,(ny-1)*floor_height+ground_floor_height,0)Symbol(Roof)];
+
+Symbol(Facadesd) <1-vt*floor((100+nx-3)/100)*floor((100+nz-3)/100)> -> 
+[Facade(nx, ny,0,v1,vb)]
+[Movexz(nx*tile_width,0)/(270) Facade(nz,ny,1,v2,vb)]
+[Movexz(nx*tile_width,nz*tile_width) /(180) Facade(nx,ny,2,v3,vb)]
+[Movexz(0,nz*tile_width) /(90) Facade(nz,ny,3,v4,vb)] [
+Color(0.7,0.4,0.1)Rooftop(nx*tile_width,nz*tile_width)][Movexyz(0,(ny-1)*floor_height+ground_floor_height,0)
+Color(0.1,0.1,0.7)Rooftop(nx*tile_width,nz*tile_width)];
+
+///////////////////////////////////////////////////////////////////
+// Roof
+
+
+#define rs 0.5243
+
+Symbol(Roof) -> 
+[Movexz(0,tile_width*0.25)Roofcorners(rs,nx,0,v1)Roofrow(0,v1,0, nx-2)]
+[Movexz((nx-0.25)*tile_width,0)/(270) Roofcorners(rs,nz,1,v2) Roofrow(1,v2,0, nz-2)]
+[Movexz(nx*tile_width,(nz-0.25)*tile_width) /(180) Roofcorners(rs,nx,2,v3) Roofrow(2,v3,0, nx-2)]
+[Movexz(0.25*tile_width,nz*tile_width) /(90) Roofcorners(rs,nz,3,v4) Roofrow(3,v4,0, nz-2)]Movexyz(0.26*tile_width,0.495,0.26*tile_width)Color(0.1,0.1,0.7)Rooftop((nx-0.52)*tile_width,(nz-0.52)*tile_width);
+
+Roofcorners(w,nx,side,v) <0.75*v> -> [Movexz(0,tile_width*0.25)Roofcornernw(w,w,-1*w)Roofw(w,w)] [Movexz(nx*tile_width,tile_width*0.25)Roofcornernw(-1*w,w,-1*w)Roofw(-1*w,w)];
+Roofcorners(w,nx,side,v) <1-0.75*v> -> [Movexz(0,tile_width*0.25)Roofcornernw(w,w,-1*w)] [Movexz(nx*tile_width,tile_width*0.25)Roofcornernw(-1*w,w,-1*w)];
+
+Roofw(w1,w) -> Movexyz(0.2*w1, 0.25*w, 0.28*w)Roofsmallwindow(w1*0.5,w*0.5,w*-0.5);
+ 
+Roofrow(side,v,n,max) <1-floor(n/max)> -> Movexz(tile_width,0) [Rooftile(tile_width,side,v)] Roofrow(side,v,n+1,max);
+Roofrow(side,v,n,max) <floor(n/max)> -> E;
+
+Rooftile(w,s,v) <1 /* 3/4*v */> -> Roofnowindow(w*1.05,w,-1*w)[Movexyz(0,0,0.05*w)Roofwindow(w,w,-1*w)];
+//Rooftile(w,s,v) <1 - 3/4 /* *v */> -> Roofnowindow(w,w,-1*w);
+
+// Facade split into floors 
+
+// We can split facade into two facades and entrance column but only for side=0 and visible (v=1)
+#define RuleSplitFacade(prob,S1,w1,S2,w2,S3) \
+Facade(nw,nh,side,v,gr) <prob*floor((4-side)/4)*(1 - floor(1 - (nw-(w1)-(w2))) )> -> [S1(w1,nh,side,v,gr)] \
+[Movexy((w1)*tile_width,0) S2(w2,nh,side,v,gr)] Movexy(((w1)+(w2))*tile_width,0) S3(nw-(w1)-(w2),nh,side,v,gr)
+
+Facade(nw,nh,side,v,gr) <0.2> -> Floorsgr(nw,nh,side,v,gr);
+
+#define USE_ENTRANCE_COLUMN 0
+
+#if USE_ENTRANCE_COLUMN
+RuleSplitFacade(0.2,Floorsgr,1,Entrancegr,1,Floorsgr);
+RuleSplitFacade(0.2,Floorsgr,2,Entrancegr,1,Floorsgr);
+RuleSplitFacade(0.2,Floorsgr,3,Entrancegr,1,Floorsgr);
+RuleSplitFacade(0.2,Floorsgr,4,Entrancegr,1,Floorsgr);
+
+// Entrance column
+Entrancegr(nw,nh,s,v,gr) <floor(1+(nh-2)/100)*gr> -> Color(0.4,0.1,0.1) Groundwindow(tile_width,tile_width,-1*tile_width) Movexy(0,ground_floor_height) Color(0.7,0.4,0.2) Entrance(tile_width,floor_height,s,v,0,nh-1);
+
+Entrancegr(nw,nh,s,v,gr) <1-gr> -> Color(0.7,0.4,0.2) Entrance(tile_width,floor_height,s,v,0,nh);
+
+Entrancegr(nw,nh,s,v,gr) <gr-floor(1+(nh-2)/100)*gr> -> Color(0.4,0.1,0.1) Groundwindow(tile_width,tile_width,-1*tile_width);
+
+Entrance(w,h,s,v,n,max) <1-(floor(n/max))> -> Tile(w,h,s,v) Movexy(0,h) Entrance(w,h,s,v,n+1,max);
+Entrance(w,h,s,v,n,max) <(floor(n/max))> -> E;
+
+#endif
+
+// Regular floors
+Floorsgr(nw,nh,s,v,gr) <floor(1+(nh-2)/100)*gr> -> Color(0.3,0.3,0.1) [Groundfloor(tile_width,ground_floor_height,s,v,0,nw)]
+Movexy(0,ground_floor_height) Color(0.7,0.7,0.6) Floors(nw,floor_height,s,v,0,nh-1);
+
+Floorsgr(nw,nh,s,v,gr) <1-gr> ->Color(0.7,0.7,0.6) Floors(nw,floor_height,s,v,0,nh);
+
+Floorsgr(nw,nh,s,v,gr) <gr-floor(1+(nh-2)/100)> -> Color(0.3,0.3,0.1) [Groundfloor(tile_width,ground_floor_height,s,v,0,nw)];
+
+// Loop over n
+Floors(nw,h,s,v,n,max) <1-(floor(n/max))> -> [Floor(tile_width,h,s,v,0,nw)] Movexy(0,floor_height) Floors(nw,h,s,v,n+1,max);
+Floors(nw,h,s,v,n,max) <(floor(n/max))> -> E;
+
+// Floor creates Tile (loop over n)
+Groundfloor(w,h,s,v,n,max) <1-floor(n/max)> -> Groundtile(w,h,s,v) Movexy(w,0) Groundfloor(w,h,s,v,n+1,max);
+Groundfloor(w,h,s,v,n,max) <floor(n/max)> -> E;
+
+Floor(w,h,s,v,n,max) <1-floor(n/max)> -> Tile(w,h,s,v) Movexy(w,0) Floor(w,h,s,v,n+1,max);
+Floor(w,h,s,v,n,max) <floor(n/max)> -> E;
+
+// Put windows only on the street side (facing -z), floor((4-s)/4)
+ 
+// N/S window
+Tile(w,h,s,v) <floor(1-s/5)+floor(1-abs(s-2)/5) /*0.6*v */> -> [Wall(w,h,s)[Movexy(w*0.2,h*0.1)Balcony(w*0.6,w*0.6,-0.6*w,s)][Movexy(w*0.275,h*0.2)Window(w*0.45,w*0.45,s)]
+Movexyz(w*0.32,h*0.65,0)Shade(w*0.36,w*0.36,-0.36*w,s)];
+
+// S/E window
+Tile(w,h,s,v) <1-floor(1-s/5)-floor(1-abs(s-2)/5) /*0.6*v */> -> [Wall(w,h,s) /* [Movexy(w*0.2,h*0.1)Balcony(w*0.6,w*0.6,-0.6*w,s)] */[Movexy(w*0.35,h*0.2)Window(w*0.3,w*0.3,s)]
+Movexyz(w*0.32,h*0.65,0)Shade(w*0.36,w*0.36,-0.36*w,s)];
+//Tile(w,h,s,v) <1-0.8*v> -> [Wall(w,h,s)];
+
+Groundtile(w,h,s,v) -> [Movexyz(0,0,w*0.1)Groundwindow(w,w*0.4/0.6,-1*w) Movexyz(0,ground_floor_height*0.75,tile_width*-0.1)Groundshade(w,w*0.4/0.6,-1*w)];

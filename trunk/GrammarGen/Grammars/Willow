@@ -1,0 +1,143 @@
+// Good params for branch_density, two_branch_prob, and width_scale
+// 0.6, 0.2, 1.1 - clusters at the end of branches 
+// 0.8, 0.2, 1.1 - denser clusters
+// 0.6, 0.4, 1.1 - more tree like
+// 0.3, 0.6, 1.09 - a lot of branching, becoming a bit wild
+// 0.1, 0.8, 1.08 - looks too young
+
+// Branch density: between 0.5 - 0.8 seems OK
+#define branch_density 0.3
+#define two_branch_prob 0.9
+
+#define width_scale 1.1  // lower a bit from 1.1 for two_branch_prob > 0.6
+
+// Stem length variation: 1 no variation, 0.5 is nice, 0.1 wild
+#define stem_length_variation 0.6
+
+#define foo 30+n/tree_age*UniformSample(5,55)
+
+#define	angle_left  foo
+#define angle_right foo
+#define angle_mono UniformSample(60,90)
+#define phylo_angle 137.5
+
+#define initial_width 0.005
+#define trunk_prob 3
+#define trunk_length UniformSample(1,3)
+
+#define scale_mono 0.90
+#define scale_left  0.89
+#define scale_right  0.87
+#define branch_scale 0.75 // off a monopodial trunk
+#define branch_length 15
+
+#define branch_horizon_angle UniformSample(-45,45)
+
+#define upward_tendency 0.25
+#define branch_gravity -0.03
+#define leaf_upward_tendency 1
+#define leaf_gravity -0.5
+
+#define StemLength(s) UniformSample(s*stem_length_variation,s)
+
+#define tree_age 12
+#define derivation_steps 45  // must be tree_age plus at least 10
+
+#define init_budget (tree_age*tree_age*tree_age* branch_density)
+
+#define Branch(len,n,budget,c) Width(initial_width * exp(log(budget)/1.7)) Stem(StemLength(len),1.2, n, c)
+// Lo(len,n)
+
+#define Branch0(len,n,budget,c) Width(initial_width * exp(log(budget)/1.7)) Stem(StemLength(len),0, n, c)
+// Lo(len,n)
+
+DerivationLength: derivation_steps;
+Axiom : Color(0.6,0.3,0.1) Branch0(1.0,tree_age,init_budget,1) A(tree_age,1,phylo_angle,1,init_budget);
+
+///// Monopodial branching
+// with a small probability switch to sympodial branching 
+M(n,s,budget) < trunk_prob/(n) > : n > 0 -> A(n, s*branch_scale, phylo_angle,1,budget);
+
+M(n,s,budget) < 1-trunk_prob/n > : n > 0 -> /(phylo_angle+NormalSample(0,30))[-(angle_mono)/(90)A(n, s*branch_scale, phylo_angle, 1, (budget-1)*0.3)] Branch(s*0.5,n,(budget-1),1) M(n-1,s*scale_mono,(budget-1)*0.7);
+
+// Terminate branch when n is 0
+A(n,s,pa,asc,budget) : budget < 0.3 || n == 0 -> T(s,4) Color(0.6,0.3,0.1);
+A(n,s,pa,asc,budget) <0.001> -> Etrunk;
+
+// Two new branches
+#define PROB_TWO (two_branch_prob + (1-two_branch_prob)*budget/(exp(log(2)*n)))
+
+
+// #define radomir(param,another) Turntovec(0, param,0) Cenforce(another) /(pa+branch_horizon_angle)
+#define radomir(param) Turntovec(0, param,0) /(pa+branch_horizon_angle)
+
+#define BEND_DOWN_LEVEL 3
+//#define LARGE_TURN 0.5
+//#define SMALL_TURN 0.1
+
+A(n,s,pa,asc,budget) < PROB_TWO*0.4 > : budget >= 1.3 && n > BEND_DOWN_LEVEL -> radomir(upward_tendency) Branch(s*1.5,n,budget,2) [-(angle_left*asc)A(n-1,s*scale_left,pa,asc,(budget-1)*0.5)] +(angle_right*asc)A(n-1,s*scale_right,pa,asc,(budget-1)*0.5);
+
+A(n,s,pa,asc,budget) < PROB_TWO*0.3 > : budget >= 1.3 && n > BEND_DOWN_LEVEL -> radomir(upward_tendency)  Branch(s*1.5,n,budget,2) [-(angle_left*asc)A(n-1,s*scale_left,pa,asc,(budget-1)*0.6)] +(angle_right*asc)A(n-1,s*scale_right,pa,asc,(budget-1)*0.4);
+
+A(n,s,pa,asc,budget) < PROB_TWO*0.2 > : budget >= 1.3 && n > BEND_DOWN_LEVEL -> radomir(upward_tendency) Branch(s*1.5,n,budget,2) [-(angle_left*asc)A(n-1,s*scale_left,pa,asc,(budget-1)*0.7)] +(angle_right*asc)A(n-1,s*scale_right,pa,asc,(budget-1)*0.3);
+
+A(n,s,pa,asc,budget) < PROB_TWO*0.1 > : budget >= 1.3 && n > BEND_DOWN_LEVEL -> radomir(upward_tendency) Branch(s*1.5,n,budget,2) [-(angle_left*asc)A(n-1,s*scale_left,pa,asc,(budget-1)*0.8)] +(angle_right*asc)A(n-1,s*scale_right,pa,asc,(budget-1)*0.2);
+
+A(n,s,pa,asc,budget) < PROB_TWO*0.05 > : budget >= 1.3 && n > BEND_DOWN_LEVEL -> radomir(upward_tendency) Branch(s*1.5,n,budget,2) [-(angle_left*asc)A(n-1,s*scale_left,pa,asc,(budget-1)*0.9)] +(angle_right*asc)A(n-1,s*scale_right,pa,asc,(budget-1)*0.1);
+
+// One new branch
+A(n,s,pa,asc,budget) < 1 - PROB_TWO > : budget >= 0.3 && n > BEND_DOWN_LEVEL -> radomir(0.5*upward_tendency) Branch(s*1.5,n,budget,1) +(angle_right)A(n-1,s*scale_right,pa,asc,budget-1);
+
+
+
+// Branch with gravity 
+A(n,s,pa,asc,budget) < PROB_TWO*0.4 > : budget >= 1.3 && n > 0 && n < BEND_DOWN_LEVEL+1-> radomir(branch_gravity) Branch(s,n,budget,2) [-(angle_left*asc)A(n-1,s*scale_left,pa,asc,(budget-1)*0.5)] +(angle_right*asc)A(n-1,s*scale_right,pa,asc,(budget-1)*0.5);
+
+A(n,s,pa,asc,budget) < PROB_TWO*0.3 > : budget >= 1.3 && n > 0 && n < BEND_DOWN_LEVEL+1 -> radomir(branch_gravity) Branch(s,n,budget,2) [-(angle_left*asc)A(n-1,s*scale_left,pa,asc,(budget-1)*0.6)] +(angle_right*asc)A(n-1,s*scale_right,pa,asc,(budget-1)*0.4);
+
+A(n,s,pa,asc,budget) < PROB_TWO*0.2 > : budget >= 1.3 && n > 0 && n < BEND_DOWN_LEVEL+1 -> radomir(branch_gravity) Branch(s,n,budget,2) [-(angle_left*asc)A(n-1,s*scale_left,pa,asc,(budget-1)*0.7)] +(angle_right*asc)A(n-1,s*scale_right,pa,asc,(budget-1)*0.3);
+
+A(n,s,pa,asc,budget) < PROB_TWO*0.1 > : budget >= 1.3 && n > 0 && n < BEND_DOWN_LEVEL+1 -> radomir(branch_gravity) Branch(s,n,budget,2) [-(angle_left*asc)A(n-1,s*scale_left,pa,asc,(budget-1)*0.8)] +(angle_right*asc)A(n-1,s*scale_right,pa,asc,(budget-1)*0.2);
+
+A(n,s,pa,asc,budget) < PROB_TWO*0.05 > : budget >= 1.3 && n > 0 && n < BEND_DOWN_LEVEL+1 -> radomir(branch_gravity) Branch(s,n,budget,2) [-(angle_left*asc)A(n-1,s*scale_left,pa,asc,(budget-1)*0.9)] +(angle_right*asc)A(n-1,s*scale_right,pa,asc,(budget-1)*0.1);
+
+// One new branch
+A(n,s,pa,asc,budget) < 1 - PROB_TWO > : budget >= 0.3 && n > 0 && n < BEND_DOWN_LEVEL+1 -> radomir(branch_gravity) Branch(s,n,budget,1) +(angle_right)A(n-1,s*scale_right,pa,asc,budget-1);
+// Approximates the pipe model with value in 2-3
+//Width(w,n) : n > 0 -> Width(w * exp(log(n)/2.2),0);
+
+
+
+// terminal branches
+#define LEAVE_SIZE initial_width*8.0
+#define Cluster(n1,n2,n,t,g) Color(0.1,0.7,0) Turnup(0,10,0) C(n1,n2,n,t,g) Color(0.6,0.3,0.1)
+#define Cluster3 Cluster(2,3,7,1,-0.5)
+#define Cluster4 Cluster(3,4,8,2,-0.7)
+#define Cluster5 Cluster(4,5,9,3,-0.9)
+#define Cluster6 Cluster(4,5,10,4,-1)
+C(n1,n2,n,t,g) : n1 > 0 -> [+(UniformSample(-60,60))L(0.4,n,t,g)] C(n1-1,n2-1,n,t,g);
+C(n1,n2,n,t,g) <1-1/n2> : n1 <= 0 && n2 > 0 -> [+(UniformSample(-60,60))L(0.4,n,t,g)] C(n1-1,n2-1,n,t,g);
+C(n1,n2,n,t,g) <1/n2> : n1 <= 0 && n2 > 0 -> E;
+C(n1,n2,n,t,g) : n2 <= 0 -> E;
+
+T(s,n) <0.45> : n > 2 -> /(phylo_angle+branch_horizon_angle) Turnperptovec(0,0.3,0) Turntovec(0,-0.5+n*0.1,0) Width(initial_width) Stem(s,0,0,1) Width(LEAVE_SIZE) Cluster3 T(s,n-1);
+T(s,n) <0.45> : n > 2 -> /(phylo_angle+branch_horizon_angle) Turnperptovec(0,0.3,0) Turntovec(0,-0.5+n*0.1,0) Width(initial_width) Stem(s,0,0,1) Width(LEAVE_SIZE) Cluster4 T(s,n-1);
+T(s,n) <0.1> : n > 2 -> /(phylo_angle+branch_horizon_angle) Turnperptovec(0,0.3,0) Turntovec(0,-0.5+n*0.1,0) Width(initial_width) Stem(s,0,0,1) T(s,n-1);
+
+T(s,n) <1/4> : n > 0 && n < 3 -> /(phylo_angle+branch_horizon_angle) Turnperptovec(0,0.3,0) Turntovec(0,-0.5+n*0.1,0) Width(initial_width) Stem(s/2,0,0,1) Width(LEAVE_SIZE) Cluster3 T(s,n-1);
+T(s,n) <1/4> : n > 0 && n < 3 -> /(phylo_angle+branch_horizon_angle) Turnperptovec(0,0.3,0) Turntovec(0,-0.3+n*0.1,0) Width(initial_width) Stem(s/2,0,0,1) Width(LEAVE_SIZE) Cluster4 T(s,n-1);
+T(s,n) <1/4> : n > 0 && n < 3 -> /(phylo_angle+branch_horizon_angle) Turnperptovec(0,0.3,0) Turntovec(0,-0.5+n*0.1,0) Width(initial_width) Stem(s/2,0,0,1) Width(LEAVE_SIZE) Cluster5 T(s,n-1);
+T(s,n) <1/4> : n > 0 && n < 3 -> /(phylo_angle+branch_horizon_angle) Turnperptovec(0,0.3,0) Turntovec(0,-0.5+n*0.1,0) Width(initial_width) Stem(s/2,0,0,1) Width(LEAVE_SIZE) Cluster6 T(s,n-1);
+
+T(s,n) <1/4> : n == 0 -> Width(LEAVE_SIZE) Cluster3 Etrunk;
+T(s,n) <1/4> : n == 0 -> Width(LEAVE_SIZE) Cluster4 Etrunk;
+T(s,n) <1/4> : n == 0 -> Width(LEAVE_SIZE) Cluster5 Etrunk;
+T(s,n) <1/4> : n == 0 -> Width(LEAVE_SIZE) Cluster6 Etrunk;
+
+T(s,n) <0.02> -> Etrunk;
+
+L(s,n,t,g) : n > 0 -> Turntovec(0,g,0)Polygon(s,n,t)L(s,n-1,t,g);
+L(s,n,t,g) <0.02> : n < 3 -> E;
+
+// Leaves
+Lnone(s,n) : n < 5 -> Color(0.1,0.7,0) [^(130) Turnztovec(0,leaf_upward_tendency,0) Turntovec(0,leaf_gravity,0)Leafconnector(s*0.3*1.1)Leaf(s*0.7,s*0.7)][/(180)^(130) Turnztovec(0,leaf_upward_tendency,0) Turntovec(0,leaf_gravity,0)Leafconnector(s*0.3*1.1)Leaf(s*0.7,s*0.7)] Color(0.6,0.3,0.1);
